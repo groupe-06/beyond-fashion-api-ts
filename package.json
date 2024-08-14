@@ -1,0 +1,23 @@
+{
+  "name": "beyound-fashion-api-ts",
+  "version": "1.0.0",
+  "main": "app.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "nodemon": "^3.1.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.3.0",
+    "prisma": "^5.18.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}

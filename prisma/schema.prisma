@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[]
+}
+
+model User {
+  id          Int     @id @default(autoincrement())
+  email       String  @unique
+  password    String
+  roles       Role[]
+  lastname    String
+  firstname   String
+  address     String?
+  phonenumber String  @unique
+  credit      Int     @default(0)
+
+  // Self-referencing many-to-many relationship for followings and followers
+  followings UserFollow[] @relation("Followings")
+  followers  UserFollow[] @relation("Followers")
+
+  //followings: Represents the users that the current user is following.
+  //followers: Represents the users who are following the current user.
+}
+
+model UserFollow {
+  id          Int @id @default(autoincrement())
+  followerId  Int
+  followingId Int
+
+  follower  User @relation("Followers", fields: [followerId], references: [id])
+  following User @relation("Followings", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId]) // Ensure unique follows
+}
