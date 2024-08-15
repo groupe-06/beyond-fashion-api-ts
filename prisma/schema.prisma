@@ -54,7 +54,6 @@ model Report {
   postId    Int
   reason    String
   createdAt DateTime @default(now())
-
   user User @relation("UserReports", fields: [userId], references: [id])
   post Post @relation("PostReports", fields: [postId], references: [id])
 }
@@ -63,7 +62,6 @@ model UserFollow {
   id          Int @id @default(autoincrement())
   followerId  Int
   followingId Int
-
   follower  User @relation("Followers", fields: [followerId], references: [id])
   following User @relation("Followings", fields: [followingId], references: [id])
 
@@ -197,3 +195,4 @@ model Measure {
   bust         Float?
   inseam       Float?
 }
+
