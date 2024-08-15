@@ -14,28 +14,49 @@ datasource db {
 }
 
 model Role {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
-  users User[]
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  users  User[]
+  shares Share[] @relation("UserShares")
 }
 
 model User {
-  id          Int     @id @default(autoincrement())
-  email       String  @unique
-  password    String
-  roles       Role[]
-  lastname    String
-  firstname   String
-  address     String?
-  phonenumber String  @unique
-  credit      Int     @default(0)
+  id               Int            @id @default(autoincrement())
+  email            String         @unique
+  password         String
+  roles            Role[]
+  lastname         String
+  firstname        String
+  address          String?
+  phonenumber      String         @unique
+  credit           Int            @default(0)
+  posts            Post[]         @relation("AuthorPosts")
+  rates            Rate[]         @relation("UserRates")
+  comments         Comment[]      @relation("UserComments")
+  dislikes         Dislike[]      @relation("UserDislikes")
+  likes            Like[]         @relation("UserLikes")
+  followings       UserFollow[]   @relation("Followings")
+  followers        UserFollow[]   @relation("Followers")
+  reports          Report[]       @relation("UserReports")
+  sentMessages     Message[]      @relation("SenderMessages")
+  receivedMessages Message[]      @relation("ReceiverMessages")
+  notifications    Notification[] @relation("UserNotifications")
+  favorites        Favorite[]     @relation("UserFavorites")
+  recharges        Recharge[]     @relation("UserRecharges")
+  sharesReceived   Share[]        @relation("RecipientShares")
+  statues          Statue[]       @relation("UserStatues")
+  measures         Measure[]      @relation("UserMeasures")
+}
 
-  // Self-referencing many-to-many relationship for followings and followers
-  followings UserFollow[] @relation("Followings")
-  followers  UserFollow[] @relation("Followers")
+model Report {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  postId    Int
+  reason    String
+  createdAt DateTime @default(now())
 
-  //followings: Represents the users that the current user is following.
-  //followers: Represents the users who are following the current user.
+  user User @relation("UserReports", fields: [userId], references: [id])
+  post Post @relation("PostReports", fields: [postId], references: [id])
 }
 
 model UserFollow {
@@ -47,4 +68,131 @@ model UserFollow {
   following User @relation("Followings", fields: [followingId], references: [id])
 
   @@unique([followerId, followingId]) // Ensure unique follows
+}
+
+model Post {
+  id          Int        @id @default(autoincrement())
+  content     String
+  description String?    @db.VarChar(800)
+  status      Boolean    @default(true)
+  views       Int        @default(0)
+  author      User       @relation("AuthorPosts", fields: [authorId], references: [id])
+  authorId    Int
+  publishedAt DateTime   @default(now())
+  nbFavorites Int        @default(0)
+  rates       Rate[]
+  comments    Comment[]
+  likes       Like[]
+  dislikes    Dislike[]
+  reports     Report[]   @relation("PostReports")
+  favorites   Favorite[] @relation("PostFavorites")
+  shares      Share[]    @relation("PostShares")
+}
+
+model Rate {
+  id          Int     @id @default(autoincrement())
+  stars       Float   @db.Float
+  description String? @db.VarChar(800)
+  post        Post    @relation(fields: [postId], references: [id])
+  postId      Int
+  user        User    @relation("UserRates", fields: [userId], references: [id])
+  userId      Int
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.VarChar(500)
+  author    User     @relation("UserComments", fields: [authorId], references: [id])
+  authorId  Int
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    Int
+  createdAt DateTime @default(now())
+}
+
+model Dislike {
+  id     Int  @id @default(autoincrement())
+  post   Post @relation(fields: [postId], references: [id])
+  postId Int
+  user   User @relation("UserDislikes", fields: [userId], references: [id])
+  userId Int
+}
+
+model Like {
+  id     Int  @id @default(autoincrement())
+  post   Post @relation(fields: [postId], references: [id])
+  postId Int
+  user   User @relation("UserLikes", fields: [userId], references: [id])
+  userId Int
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  sender     User     @relation("SenderMessages", fields: [senderId], references: [id])
+  senderId   Int
+  receiver   User     @relation("ReceiverMessages", fields: [receiverId], references: [id])
+  receiverId Int
+  content    String
+  createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  receiver   User     @relation("UserNotifications", fields: [receiverId], references: [id])
+  receiverId Int
+  message    String
+  createdAt  DateTime @default(now())
+  isRead     Boolean  @default(false)
+}
+
+model Favorite {
+  id     Int  @id @default(autoincrement())
+  user   User @relation("UserFavorites", fields: [userId], references: [id])
+  userId Int
+  post   Post @relation("PostFavorites", fields: [postId], references: [id])
+  postId Int
+}
+
+model Recharge {
+  id     Int     @id @default(autoincrement())
+  user   User    @relation("UserRecharges", fields: [userId], references: [id])
+  userId Int
+  code   Int     @unique
+  amount Float
+  isUsed Boolean @default(false)
+}
+
+model Share {
+  id        Int    @id @default(autoincrement())
+  recipient User[] @relation("RecipientShares")
+  user      Role[] @relation("UserShares")
+  posts     Post[] @relation("PostShares")
+}
+
+model Statue {
+  id          Int       @id @default(autoincrement())
+  content     String
+  author      User      @relation("UserStatues", fields: [authorId], references: [id])
+  authorId    Int
+  publishedAt DateTime  @default(now())
+  expiresAt   DateTime?
+}
+
+enum Gender {
+  male
+  female
+}
+
+model Measure {
+  id           Int    @id @default(autoincrement())
+  user         User   @relation("UserMeasures", fields: [userId], references: [id])
+  userId       Int
+  gender       Gender
+  shoulder     Float
+  chest        Float
+  waist        Float
+  hips         Float
+  sleeveLength Float?
+  neck         Float?
+  bust         Float?
+  inseam       Float?
 }
