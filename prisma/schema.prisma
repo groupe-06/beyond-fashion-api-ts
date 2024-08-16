@@ -46,6 +46,18 @@ model User {
   statues          Statue[]       @relation("UserStatues")
   measures         Measure[]      @relation("UserMeasures")
   shares           Share[]        @relation("UserShares")
+  blocks           Block[]        @relation("UserBlocks")
+  blockedBy        Block[]        @relation("BlockedUsers")
+}
+
+model Block {
+  id          Int @id @default(autoincrement())
+  blockerId   Int
+  blockedId   Int
+  blocker     User @relation("UserBlocks", fields: [blockerId], references: [id])
+  blocked     User @relation("BlockedUsers", fields: [blockedId], references: [id])
+
+  @@unique([blockerId, blockedId]) 
 }
 
 model Report {
@@ -65,7 +77,7 @@ model UserFollow {
   follower  User @relation("Followers", fields: [followerId], references: [id])
   following User @relation("Followings", fields: [followingId], references: [id])
 
-  @@unique([followerId, followingId]) // Ensure unique follows
+  @@unique([followerId, followingId]) 
 }
 
 model Post {
