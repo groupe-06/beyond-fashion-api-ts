@@ -1,8 +1,7 @@
 import express from 'express';
 import roleRoute from './routes/roleRoute';
 import userRoute from './routes/userRoute';
-import dotenv from 'dotenv';
-dotenv.config();
+import 'dotenv/config';
 
 const app = express();
 const PORT = process.env.PORT || 3000;

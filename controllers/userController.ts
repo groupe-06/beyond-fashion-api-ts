@@ -1,22 +1,25 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import { generateToken } from '../middlewares/tokenMiddleware';
-import bcrypt from 'bcryptjs';
+import { cryptPassword, comparePasswords, generateToken  } from '../utils/utils';
+import prisma from '../database/db.config';
 
-const prisma = new PrismaClient();
+
 
 export const createUser = async (req: Request, res: Response) => {
-    const { email, password, lastname, firstname, phonenumber, address } = req.body;
+    const { email, password, lastname, firstname, phoneNumber, address, gender, confirm_password } = req.body;
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
+        if (password !== confirm_password) {
+            return res.status(400).json({ message: 'Passwords do not match' });
+        }
+        const hashedPassword = cryptPassword(password);
         const user = await prisma.user.create({
             data: { 
                 email, 
                 password: hashedPassword, 
                 lastname, 
                 firstname, 
-                phonenumber,
+                phoneNumber,
                 address,
+                gender,
                 roles: {
                     connect: { name: 'SIMPLE' }
                 }
@@ -28,6 +31,7 @@ export const createUser = async (req: Request, res: Response) => {
     }
 };
 
+
 export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     try {
@@ -35,14 +39,14 @@ export const login = async (req: Request, res: Response) => {
             where: { email },
         });
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ message: 'Invalid email or password' });
         }
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch =  comparePasswords(password, user.password);
         if (!isMatch) {
-            return res.status(401).json({ message: 'Invalid password' });
+            return res.status(401).json({ message: 'Invalid email or password' });
         }
         const token = await generateToken(user);
-        res.json({ message: 'User Logged successfully', token });
+        res.json({ message: 'User Logged successfully', ...user, token });
     } catch (error) {
         res.status(500).json({ message: 'Failed to login', error });
     }
@@ -58,10 +62,13 @@ export const getAllUsers = async (req: Request, res: Response) => {
 };
 
 export const getUserById = async (req: Request, res: Response) => {
-    const { id } = req.params;
+    const userId = (req as any).userId;
     try {
         const user = await prisma.user.findUnique({
-            where: { id: Number(id) },
+            where: { id: +userId },
+            include: {
+                roles: true,
+            }
         });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -73,21 +80,20 @@ export const getUserById = async (req: Request, res: Response) => {
 };
 
 export const updateUser = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const { email, password, lastname, firstname, phonenumber } = req.body;
+    const userId = (req as any).userId;
     try {
         const user = await prisma.user.findUnique({
-            where: { id: Number(id) },
+            where: { id: Number(userId) },
         });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        const hashedPassword = password ? await bcrypt.hash(password, 10) : user.password;
         const updatedUser = await prisma.user.update({
-            where: { id: Number(id) },
-            data: { email, password: hashedPassword, lastname, firstname, phonenumber },
+            where: { id: Number(userId) },
+            data: req.body
         });
-        res.json({ message: 'User updated successfully', user: updatedUser });
+
+        res.status(201).json({ message: 'User updated successfully', user: updatedUser });
     } catch (error) {
         res.status(500).json({ message: 'Failed to update user', error });
     }
@@ -104,3 +110,74 @@ export const deleteUser = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Failed to delete user', error });
     }
 };
+
+export const updateProfile = async (req: Request, res: Response) => {
+    const userId = (req as any).userId;
+    const { role } = req.body;
+    try {
+
+        if(!userId){
+            return res.status(401).json({ message: 'You are not authorized to update this profile.' });
+        }
+
+        let user = await prisma.user.findUnique({
+            where: { id: Number(userId) },
+            include: {
+                roles: true,
+            },
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: `User with ID ${userId} not found` });
+        }
+
+        const roleFromDb =  await prisma.role.findUnique({
+            where: { name: role },
+        });
+
+        if(!roleFromDb){
+            return res.status(404).json({ message: `Role ${role} not found from DB` });
+        }
+
+        const hasAlreadyRole = user.roles.find(r => r.name === role);
+
+        if(hasAlreadyRole){
+            return res.status(400).json({ message: `User is already assigned the role ${role}.` });
+        }    
+
+        if(role === "TAILOR"){
+            const role = user.roles.find(role => role.name === "SELLER");
+            if(role){
+                return res.status(400).json({ message: `User is already assigned to the role ${role.name}.` });
+            }
+        }
+
+        if(role === "SELLER"){
+            const role = user.roles.find(role => role.name === "TAILOR");
+            if(role){
+                return res.status(400).json({ message: `User is already assigned to the role ${role.name}.` });
+            }
+        }
+
+        
+        let updatedUser;
+        if( role === "TAILOR"){
+            updatedUser = await prisma.user.update({
+                where: { id: Number(userId) },
+                data: { roles: { connect: [{ id: roleFromDb.id }] }, credit: 40 },
+            });
+        }else {
+            updatedUser = await prisma.user.update({
+                where: { id: Number(userId) },
+                data: { roles: { connect: [{ id: roleFromDb.id }] } },
+            });
+        }
+        
+        
+      
+        res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to update profile', error });
+    }
+};
+

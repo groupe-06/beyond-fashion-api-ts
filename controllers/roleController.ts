@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import prisma from '../database/db.config';
 
-const prisma = new PrismaClient();
 
 export const createRole = async (req: Request, res: Response) => {
     const { name } = req.body;

@@ -15,49 +15,59 @@ datasource db {
 
 model Role {
   id    Int    @id @default(autoincrement())
-  name  String @unique
+  name  String @unique 
   users User[]
+
+  @@map("role")
 }
 
 model User {
-  id               Int            @id @default(autoincrement())
-  email            String         @unique
-  password         String
-  roles            Role[]
-  lastname         String
-  firstname        String
-  address          String?
-  phonenumber      String         @unique
-  credit           Int            @default(0)
-  posts            Post[]         @relation("AuthorPosts")
-  rates            Rate[]         @relation("UserRates")
-  comments         Comment[]      @relation("UserComments")
-  dislikes         Dislike[]      @relation("UserDislikes")
-  likes            Like[]         @relation("UserLikes")
-  followings       UserFollow[]   @relation("Followings")
-  followers        UserFollow[]   @relation("Followers")
-  reports          Report[]       @relation("UserReports")
-  sentMessages     Message[]      @relation("SenderMessages")
-  receivedMessages Message[]      @relation("ReceiverMessages")
-  notifications    Notification[] @relation("UserNotifications")
-  favorites        Favorite[]     @relation("UserFavorites")
-  recharges        Recharge[]     @relation("UserRecharges")
-  sharesReceived   Share[]        @relation("RecipientShares")
-  statues          Statue[]       @relation("UserStatues")
-  measures         Measure[]      @relation("UserMeasures")
-  shares           Share[]        @relation("UserShares")
-  blocks           Block[]        @relation("UserBlocks")
-  blockedBy        Block[]        @relation("BlockedUsers")
+  id                Int            @id @default(autoincrement())
+  email             String         @unique
+  password          String
+  roles             Role[]
+  lastname          String
+  firstname         String
+  address           String?
+  phoneNumber       String         @unique
+  gender            Gender
+  credit            Int            @default(0)
+  posts             Post[]
+  rates             Rate[]
+  comments          Comment[]
+  dislikes          Dislike[]
+  likes             Like[]
+  followings        UserFollow[]   @relation("Followings")
+  followers         UserFollow[]   @relation("Followers")
+  reports           Report[]
+  sentMessages      Message[]      @relation("SenderMessages")
+  receivedMessages  Message[]      @relation("ReceiverMessages")
+  notifications     Notification[] @relation("UserNotifications")
+  favorites         Favorite[]
+  userRecharges     Recharge[]     @relation("UserRecharges")
+  receivedRecharges Recharge[]     @relation("ReceivedRecharges")
+
+  // sharesReceived   Share[]        @relation("RecipientShares")
+  story              Story[]
+  femaleMeasurements FemaleMeasurement[]
+  maleMeasurements   MaleMeasurement[]
+
+  // shares           Share[]        @relation("UserShares")
+  blocks    Block[] @relation("UserBlocks")
+  blockedBy Block[] @relation("BlockedUsers")
+
+  @@map("user")
 }
 
 model Block {
-  id          Int @id @default(autoincrement())
-  blockerId   Int
-  blockedId   Int
-  blocker     User @relation("UserBlocks", fields: [blockerId], references: [id])
-  blocked     User @relation("BlockedUsers", fields: [blockedId], references: [id])
+  id        Int  @id @default(autoincrement())
+  blockerId Int
+  blockedId Int
+  blocker   User @relation("UserBlocks", fields: [blockerId], references: [id])
+  blocked   User @relation("BlockedUsers", fields: [blockedId], references: [id])
 
-  @@unique([blockerId, blockedId]) 
+  @@unique([blockerId, blockedId])
+  @@map("block")
 }
 
 model Report {
@@ -66,18 +76,21 @@ model Report {
   postId    Int
   reason    String
   createdAt DateTime @default(now())
-  user User @relation("UserReports", fields: [userId], references: [id])
-  post Post @relation("PostReports", fields: [postId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id])
+
+  @@map("report")
 }
 
 model UserFollow {
-  id          Int @id @default(autoincrement())
+  id          Int  @id @default(autoincrement())
   followerId  Int
   followingId Int
-  follower  User @relation("Followers", fields: [followerId], references: [id])
-  following User @relation("Followings", fields: [followingId], references: [id])
+  follower    User @relation("Followers", fields: [followerId], references: [id])
+  following   User @relation("Followings", fields: [followingId], references: [id])
 
-  @@unique([followerId, followingId]) 
+  @@unique([followerId, followingId])
+  @@map("user_follow")
 }
 
 model Post {
@@ -86,125 +99,173 @@ model Post {
   description String?    @db.VarChar(800)
   status      Boolean    @default(true)
   views       Int        @default(0)
-  author      User       @relation("AuthorPosts", fields: [authorId], references: [id])
   authorId    Int
+  author      User       @relation(fields: [authorId], references: [id])
   publishedAt DateTime   @default(now())
   nbFavorites Int        @default(0)
   rates       Rate[]
   comments    Comment[]
   likes       Like[]
   dislikes    Dislike[]
-  reports     Report[]   @relation("PostReports")
-  favorites   Favorite[] @relation("PostFavorites")
-  shares      Share[]    @relation("PostShares")
+  reports     Report[]
+  favorites   Favorite[]
+
+  // shares      Share[]    @relation("PostShares")
+  @@map("post")
 }
 
 model Rate {
-  id          Int     @id @default(autoincrement())
-  stars       Float   @db.Float
-  description String? @db.VarChar(800)
-  post        Post    @relation(fields: [postId], references: [id])
+  id          Int      @id @default(autoincrement())
+  stars       Float    @db.Float
+  description String?  @db.VarChar(800)
   postId      Int
-  user        User    @relation("UserRates", fields: [userId], references: [id])
+  post        Post     @relation(fields: [postId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
   userId      Int
+  createdAt   DateTime @default(now())
+
+  @@map("rate")
 }
 
 model Comment {
   id        Int      @id @default(autoincrement())
-  content   String   @db.VarChar(500)
-  author    User     @relation("UserComments", fields: [authorId], references: [id])
+  content   String   @db.VarChar(800)
   authorId  Int
+  author    User     @relation(fields: [authorId], references: [id])
   post      Post     @relation(fields: [postId], references: [id])
   postId    Int
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("comment")
 }
 
 model Dislike {
-  id     Int  @id @default(autoincrement())
-  post   Post @relation(fields: [postId], references: [id])
-  postId Int
-  user   User @relation("UserDislikes", fields: [userId], references: [id])
-  userId Int
+  id        Int      @id @default(autoincrement())
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime @default(now())
+
+  @@map("dislike")
 }
 
 model Like {
-  id     Int  @id @default(autoincrement())
-  post   Post @relation(fields: [postId], references: [id])
-  postId Int
-  user   User @relation("UserLikes", fields: [userId], references: [id])
-  userId Int
+  id        Int      @id @default(autoincrement())
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime @default(now())
+
+  @@map("like")
 }
 
 model Message {
   id         Int      @id @default(autoincrement())
-  sender     User     @relation("SenderMessages", fields: [senderId], references: [id])
   senderId   Int
-  receiver   User     @relation("ReceiverMessages", fields: [receiverId], references: [id])
+  sender     User     @relation("SenderMessages", fields: [senderId], references: [id])
   receiverId Int
+  receiver   User     @relation("ReceiverMessages", fields: [receiverId], references: [id])
   content    String
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("message")
 }
 
 model Notification {
   id         Int      @id @default(autoincrement())
-  receiver   User     @relation("UserNotifications", fields: [receiverId], references: [id])
   receiverId Int
-  message    String
+  receiver   User     @relation("UserNotifications", fields: [receiverId], references: [id])
+  content    String
   createdAt  DateTime @default(now())
   isRead     Boolean  @default(false)
+
+  @@map("notification")
 }
 
 model Favorite {
-  id     Int  @id @default(autoincrement())
-  user   User @relation("UserFavorites", fields: [userId], references: [id])
-  userId Int
-  post   Post @relation("PostFavorites", fields: [postId], references: [id])
-  postId Int
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    Int
+  createdAt DateTime @default(now())
+
+  @@map("favorite")
 }
 
 model Recharge {
-  id     Int     @id @default(autoincrement())
-  user   User    @relation("UserRecharges", fields: [userId], references: [id])
-  userId Int
-  code   Int     @unique
-  amount Float
-  isUsed Boolean @default(false)
+  id         Int      @id @default(autoincrement())
+  user       User     @relation("UserRecharges", fields: [userId], references: [id])
+  userId     Int
+  receiverId Int
+  receiver   User     @relation("ReceivedRecharges", fields: [receiverId], references: [id])
+  code       Int      @unique
+  amount     Float
+  isUsed     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@map("recharge")
 }
 
-model Share {
-  id        Int    @id @default(autoincrement())
-  recipient User[] @relation("RecipientShares")
-  userId    Int
-  user      User   @relation("UserShares", fields: [userId], references: [id])
-  posts     Post[] @relation("PostShares")
-}
+// model Share {
+//   id        Int    @id @default(autoincrement())
+//   recipient User[] @relation("RecipientShares")
+//   userId    Int
+//   user      User   @relation("UserShares", fields: [userId], references: [id])
+//   posts     Post[] @relation("PostShares")
+// }
 
-model Statue {
+model Story {
   id          Int       @id @default(autoincrement())
   content     String
-  author      User      @relation("UserStatues", fields: [authorId], references: [id])
   authorId    Int
+  author      User      @relation(fields: [authorId], references: [id])
   publishedAt DateTime  @default(now())
   expiresAt   DateTime?
+
+  @@map("story")
 }
 
 enum Gender {
-  male
-  female
+  MALE
+  FEMALE
 }
 
-model Measure {
+model MaleMeasurement {
   id           Int    @id @default(autoincrement())
-  user         User   @relation("UserMeasures", fields: [userId], references: [id])
+  user         User   @relation(fields: [userId], references: [id])
   userId       Int
   gender       Gender
-  shoulder     Float
-  chest        Float
-  waist        Float
-  hips         Float
+  shoulder     Float?
+  chest        Float?
+  waist        Float?
+  hips         Float?
   sleeveLength Float?
   neck         Float?
-  bust         Float?
-  inseam       Float?
+  back         Float?
+  armhole      Float?
+  thigh        Float?
+  calf         Float?
+
+  @@map("male_measurement")
 }
 
+model FemaleMeasurement {
+  id       Int    @id @default(autoincrement())
+  user     User   @relation(fields: [userId], references: [id])
+  userId   Int
+  gender   Gender
+  shoulder Float?
+  chest    Float?
+  waist    Float?
+  hips     Float?
+  bust     Float?
+  inseam   Float?
+  thigh    Float?
+
+  @@map("female_measurement")
+}

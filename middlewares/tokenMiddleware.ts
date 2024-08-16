@@ -28,7 +28,5 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
     }
 };
 
-export const generateToken = async (user: any) => {
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET || '', { expiresIn: '1h' });
-    return token;
-};
+
+
