@@ -1,0 +1,15 @@
+[{
+    "firstname" : "Ndiaga",
+    "lastname" : "LO",
+    "email" : "ndiagalo259@gmail.com",
+    "password" : "passer123",
+    "confirm_password" : "passer123",
+    "phoneNumber" : "784559930",
+    "address" : "Liberté 5",
+    "gender" : "MALE"
+},
+{
+    "email" : "ndiagalo259@gmail.com",
+    "password" : "passer123"
+}
+]
