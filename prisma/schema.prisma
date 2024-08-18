@@ -22,36 +22,36 @@ model Role {
 }
 
 model User {
-  id                Int            @id @default(autoincrement())
-  email             String         @unique
-  password          String
-  roles             Role[]
-  lastname          String
-  firstname         String
-  address           String?
-  phoneNumber       String         @unique
-  gender            Gender
-  photoUrl          String?
-  credit            Int            @default(0)
-  posts             Post[]
-  rates             Rate[]
-  comments          Comment[]
-  dislikes         PostDislike[]
-  likes           PostLike[]
-  followings        UserFollow[]   @relation("Followings")
-  followers         UserFollow[]   @relation("Followers")
-  reports           Report[]
-  sentMessages      Message[]      @relation("SenderMessages")
-  receivedMessages  Message[]      @relation("ReceiverMessages")
-  notifications     Notification[] @relation("UserNotifications")
-  favorites         Favorite[]
-  userRecharges     Recharge[]     @relation("UserRecharges")
-  receivedRecharges Recharge[]     @relation("ReceivedRecharges")
-  story             Story[]
+  id                 Int                 @id @default(autoincrement())
+  email              String              @unique
+  password           String
+  roles              Role[]
+  lastname           String
+  firstname          String
+  address            String?
+  phoneNumber        String              @unique
+  gender             Gender
+  photoUrl           String?
+  credit             Int                 @default(0)
+  posts              Post[]
+  rates              Rate[]
+  comments           Comment[]
+  dislikes           PostDislike[]
+  likes              PostLike[]
+  followings         UserFollow[]        @relation("Followings")
+  followers          UserFollow[]        @relation("Followers")
+  reports            Report[]
+  sentMessages       Message[]           @relation("SenderMessages")
+  receivedMessages   Message[]           @relation("ReceiverMessages")
+  notifications      Notification[]      @relation("UserNotifications")
+  favorites          Favorite[]
+  userRecharges      Recharge[]          @relation("UserRecharges")
+  receivedRecharges  Recharge[]          @relation("ReceivedRecharges")
+  story              Story[]
   femaleMeasurements FemaleMeasurement[]
   maleMeasurements   MaleMeasurement[]
-  blocks            Block[] @relation("UserBlocks")
-  blockedBy         Block[] @relation("BlockedUsers")
+  blocks             Block[]             @relation("UserBlocks")
+  blockedBy          Block[]             @relation("BlockedUsers")
 
   @@map("user")
 }
@@ -91,22 +91,22 @@ model UserFollow {
 }
 
 model Post {
-  id          Int        @id @default(autoincrement())
-  content     String
-  description String?    @db.VarChar(800)
-  status      Boolean    @default(true)
-  views       Int        @default(0)
-  authorId    Int
-  author      User       @relation(fields: [authorId], references: [id])
-  publishedAt DateTime   @default(now())
-  nbFavorites Int        @default(0)
-  photoUrl    String?
-  rates       Rate[]
-  comments    Comment[]
-  postLikes   PostLike[]
+  id           Int           @id @default(autoincrement())
+  content      String
+  description  String?       @db.VarChar(800)
+  status       Boolean       @default(true)
+  views        Int           @default(0)
+  authorId     Int
+  author       User          @relation(fields: [authorId], references: [id])
+  publishedAt  DateTime      @default(now())
+  nbFavorites  Int           @default(0)
+  photoUrl     String?
+  rates        Rate[]
+  comments     Comment[]
+  postLikes    PostLike[]
   postDislikes PostDislike[]
-  reports     Report[]
-  favorites   Favorite[]
+  reports      Report[]
+  favorites    Favorite[]
 
   @@map("post")
 }
@@ -138,12 +138,12 @@ model Comment {
 }
 
 model PostDislike {
-  id          Int      @id @default(autoincrement())
-  post        Post     @relation(fields: [postId], references: [id])
-  postId      Int
-  user        User     @relation(fields: [userId], references: [id])
-  userId      Int
-  createdAt   DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  createdAt DateTime @default(now())
 
   @@map("post_dislike")
 }
@@ -209,12 +209,12 @@ model Recharge {
 }
 
 model Story {
-  id          Int       @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   content     String
-  description String?   @db.VarChar(200)
+  description String?  @db.VarChar(200)
   authorId    Int
-  author      User      @relation(fields: [authorId], references: [id])
-  publishedAt DateTime  @default(now())
+  author      User     @relation(fields: [authorId], references: [id])
+  publishedAt DateTime @default(now())
   expiresAt   DateTime
 
   @@map("story")
