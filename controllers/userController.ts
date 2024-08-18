@@ -225,9 +225,9 @@ export const blockUser = async (req:Request, res:Response) => {
             },
         });
 
-        res.status(200).json({ message: 'User blocked successfully', block });
+        return res.status(200).json({ message: 'User blocked successfully', block });
     } catch (error) {
-        res.status(500).json({ message: 'Failed to block user', error });
+        return res.status(500).json({ message: 'Failed to block user', error });
     }
 };
 
