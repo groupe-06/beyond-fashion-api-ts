@@ -156,6 +156,15 @@ export const deletePost = async (req: Request, res: Response) => {
         // user.credit += 2;
         // await prisma.user.update({ where: { id: userId }, data: { credit: user.credit } });
 
+        // if (post.createdAt.getTime() + 24 * 60 * 60 * 1000 < Date.now()) {
+        //     return res.status(400).json({ message: 'This post can not be deleted because it has been created more than a day ago.' });
+        // } 
+        
+        // suppression du post
+        await prisma.post.delete({ where: { id: postId } });
+        
+        res.status(200).json({ message: 'Post deleted successfully' });
+
         await prisma.post.delete({ where: { id: postId } });
         
         res.status(200).json({ message: 'Post deleted successfully' });
