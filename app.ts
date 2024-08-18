@@ -26,7 +26,7 @@ app.use(`${uri}/post`, reportRouter);
 app.use(`${uri}/post`, reactionRouter);
 app.use(`${uri}/stories`, storyRoute);
 app.use(`${uri}/messages`, messageRoute);
-app.use(`${uri}/posts`, postRoute);
+app.use(`${uri}/posts`, postRouter);
 
 const server = http.createServer(app);
 const io = new SocketIO(server, { cors: { origin: '*' } });
