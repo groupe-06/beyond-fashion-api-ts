@@ -35,8 +35,8 @@ model User {
   posts             Post[]
   rates             Rate[]
   comments          Comment[]
-  dislikes          Dislike[]
-  likes             Like[]
+  dislikes         PostDislike[]
+  likes           PostLike[]
   followings        UserFollow[]   @relation("Followings")
   followers         UserFollow[]   @relation("Followers")
   reports           Report[]
@@ -46,15 +46,11 @@ model User {
   favorites         Favorite[]
   userRecharges     Recharge[]     @relation("UserRecharges")
   receivedRecharges Recharge[]     @relation("ReceivedRecharges")
-
-  // sharesReceived   Share[]        @relation("RecipientShares")
-  story              Story[]
+  story             Story[]
   femaleMeasurements FemaleMeasurement[]
   maleMeasurements   MaleMeasurement[]
-
-  // shares           Share[]        @relation("UserShares")
-  blocks    Block[] @relation("UserBlocks")
-  blockedBy Block[] @relation("BlockedUsers")
+  blocks            Block[] @relation("UserBlocks")
+  blockedBy         Block[] @relation("BlockedUsers")
 
   @@map("user")
 }
@@ -103,14 +99,14 @@ model Post {
   author      User       @relation(fields: [authorId], references: [id])
   publishedAt DateTime   @default(now())
   nbFavorites Int        @default(0)
+  photoUrl    String?
   rates       Rate[]
   comments    Comment[]
-  likes       Like[]
-  dislikes    Dislike[]
+  postLikes   PostLike[]
+  postDislikes PostDislike[]
   reports     Report[]
   favorites   Favorite[]
 
-  // shares      Share[]    @relation("PostShares")
   @@map("post")
 }
 
@@ -140,18 +136,18 @@ model Comment {
   @@map("comment")
 }
 
-model Dislike {
-  id        Int      @id @default(autoincrement())
-  post      Post     @relation(fields: [postId], references: [id])
-  postId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  createdAt DateTime @default(now())
+model PostDislike {
+  id          Int      @id @default(autoincrement())
+  post        Post     @relation(fields: [postId], references: [id])
+  postId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  createdAt   DateTime @default(now())
 
-  @@map("dislike")
+  @@map("post_dislike")
 }
 
-model Like {
+model PostLike {
   id        Int      @id @default(autoincrement())
   post      Post     @relation(fields: [postId], references: [id])
   postId    Int
@@ -159,7 +155,7 @@ model Like {
   userId    Int
   createdAt DateTime @default(now())
 
-  @@map("like")
+  @@map("post_like")
 }
 
 model Message {
@@ -210,14 +206,6 @@ model Recharge {
 
   @@map("recharge")
 }
-
-// model Share {
-//   id        Int    @id @default(autoincrement())
-//   recipient User[] @relation("RecipientShares")
-//   userId    Int
-//   user      User   @relation("UserShares", fields: [userId], references: [id])
-//   posts     Post[] @relation("PostShares")
-// }
 
 model Story {
   id          Int       @id @default(autoincrement())
