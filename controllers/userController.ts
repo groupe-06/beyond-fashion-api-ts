@@ -217,7 +217,6 @@ export const blockUser = async (req:Request, res:Response) => {
             return res.status(400).json({ message: 'This user is already blocked.' });
         }
 
-        // Créer un nouveau blocage
         const block = await prisma.block.create({
             data: {
                 blockerId: blockerId,
@@ -230,4 +229,42 @@ export const blockUser = async (req:Request, res:Response) => {
         return res.status(500).json({ message: 'Failed to block user', error });
     }
 };
+
+export const unblockUser = async (req: Request, res: Response) => {
+    const blockerId = (req as any).userId; 
+    const blockedId = parseInt(req.params.blockedId); 
+
+    try {
+        if (!blockerId) {
+            return res.status(401).json({ message: 'You are not authorized to unblock this user.' });
+        }
+
+        const existingBlock = await prisma.block.findUnique({
+            where: {
+                blockerId_blockedId: {
+                    blockerId: blockerId,
+                    blockedId: blockedId,
+                },
+            },
+        });
+
+        if (!existingBlock) {
+            return res.status(404).json({ message: 'This user is not blocked.' });
+        }
+
+        await prisma.block.delete({
+            where: {
+                blockerId_blockedId: {
+                    blockerId: blockerId,
+                    blockedId: blockedId,
+                },
+            },
+        });
+
+        return res.status(201).json({ message: 'User unblocked successfully' });
+
+        } catch (error) {
+        return res.status(500).json({ message: 'Failed to unblock user', error });
+    }
+}
 
