@@ -5,11 +5,21 @@ import prisma from '../database/db.config';
 
 
 export const createUser = async (req: Request, res: Response) => {
-    const { email, password, lastname, firstname, phoneNumber, address, gender, confirm_password } = req.body;
     try {
-        if (password !== confirm_password) {
+        const { email, password, lastname, firstname, phoneNumber, address, gender, confirm_password } = req.body;
+        if (password != confirm_password) {
             return res.status(400).json({ message: 'Passwords do not match' });
         }
+        const role = await prisma.role.findFirst({ where: { name: 'SIMPLE' } });
+        if (!role) {
+            return res.status(404).json({ message: 'Role SIMPLE not found' });
+        }
+
+        const userFromDB = await prisma.user.findUnique({ where: { email } });
+        if (userFromDB) {
+            return res.status(409).json({ message: 'User with this email already exists' });
+        }
+        
         const hashedPassword = cryptPassword(password);
         const user = await prisma.user.create({
             data: { 
@@ -21,7 +31,7 @@ export const createUser = async (req: Request, res: Response) => {
                 address,
                 gender,
                 roles: {
-                    connect: { name: 'SIMPLE' }
+                    connect: { name: role.name }
                 }
             },
         });
