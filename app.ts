@@ -5,6 +5,7 @@ import storyRoute from './routes/storyRoute';
 import messageRoute from './routes/messageRoute';
 import { Server as SocketIO } from 'socket.io';
 import http from 'http';
+import postRoute from './routes/postRoute';
 
 import 'dotenv/config';
 
@@ -19,6 +20,7 @@ app.use(`${uri}/roles`, roleRoute);
 app.use(`${uri}/users`, userRoute);
 app.use(`${uri}/stories`, storyRoute);
 app.use(`${uri}/messages`, messageRoute);
+app.use(`${uri}/posts`, postRoute);
 
 const server = http.createServer(app);
 const io = new SocketIO(server, { cors: { origin: '*' } });
@@ -36,6 +38,7 @@ io.on('connection', (socket) => {
 /*app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });*/
+
 
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

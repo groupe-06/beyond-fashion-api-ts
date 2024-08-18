@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { z } from 'zod';
 
 export const cryptPassword = (password: string ) => {
     const salt = bcrypt.genSaltSync(10);
