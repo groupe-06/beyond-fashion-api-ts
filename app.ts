@@ -1,6 +1,7 @@
 import express from 'express';
 import roleRoute from './routes/roleRoute';
 import userRoute from './routes/userRoute';
+import measurementRoute from './routes/measurementRoute';
 import Rechargerouter from './routes/recharRoutes';
 import storyRoute from './routes/storyRoute';
 import messageRoute from './routes/messageRoute';
@@ -20,6 +21,7 @@ const uri = process.env.URI;
 app.use(express.json());
 app.use(`${uri}/roles`, roleRoute);
 app.use(`${uri}/users`, userRoute);
+app.use(`${uri}/measurements`, measurementRoute);
 app.use(`${uri}/users`, Rechargerouter);
 app.use(`${uri}/post`, postRouter);
 app.use(`${uri}/post`, reportRouter);

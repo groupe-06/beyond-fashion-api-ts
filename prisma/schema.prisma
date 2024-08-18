@@ -229,7 +229,6 @@ model MaleMeasurement {
   id           Int    @id @default(autoincrement())
   user         User   @relation(fields: [userId], references: [id])
   userId       Int
-  gender       Gender
   shoulder     Float?
   chest        Float?
   waist        Float?
@@ -248,7 +247,6 @@ model FemaleMeasurement {
   id       Int    @id @default(autoincrement())
   user     User   @relation(fields: [userId], references: [id])
   userId   Int
-  gender   Gender
   shoulder Float?
   chest    Float?
   waist    Float?
