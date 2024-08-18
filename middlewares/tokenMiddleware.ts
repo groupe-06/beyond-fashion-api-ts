@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 declare global {
     namespace Express {
         interface Request {
-            user?: any; // Add user property
+            user?: any; 
         }
     }
 }

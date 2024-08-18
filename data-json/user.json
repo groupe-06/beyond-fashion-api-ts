@@ -24,6 +24,14 @@
   },
   {
     "email" : "sodadiop065@gmail.com",
-    "password" : "passer123"
+    "password" : "passer123",
+    "firstname" : "Serigne",
+    "lastname" : "Thiam",
+    "email" : "serignembayet@gmail.com",
+    "password" : "passer123",
+    "confirm_password" : "passer123",
+    "phoneNumber" : "775752135",
+    "address" : "Yoff",
+    "gender" : "MALE"
 }
 ]

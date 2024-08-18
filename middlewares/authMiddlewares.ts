@@ -11,6 +11,7 @@ export const getToken = (req: Request, res: Response, next:NextFunction) =>{
         return res.status(401).json({ message: 'Authorization header malformed' });
     }
 
+
     const token = authHeader.replace('Bearer ', '');
     
 
@@ -24,7 +25,5 @@ export const getToken = (req: Request, res: Response, next:NextFunction) =>{
     } catch (error) {
         return res.status(401).json({ message: 'Invalid token' });
     }
-
- 
-    
+  
 }
