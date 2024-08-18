@@ -1,16 +1,34 @@
 import { Request, Response } from 'express';
-import { cryptPassword, comparePasswords, generateToken  } from '../utils/utils';
+import { cryptPassword, comparePasswords, generateToken } from '../utils/utils';
 import prisma from '../database/db.config';
-
+import cloudinary from '../config/cloudinary';
 
 
 export const createUser = async (req: Request, res: Response) => {
     const { email, password, lastname, firstname, phoneNumber, address, gender, confirm_password } = req.body;
+    const file = req.file; 
     try {
         if (password !== confirm_password) {
             return res.status(400).json({ message: 'Passwords do not match' });
         }
+        
         const hashedPassword = cryptPassword(password);
+
+        let photoUrl = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+        if (file) {
+            const media = await new Promise((resolve, reject) => {
+                const uploadStream = cloudinary.uploader.upload_stream(
+                    { resource_type: 'auto' },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
+                    }
+                );
+                uploadStream.end(file.buffer);  
+            });
+            photoUrl = (media as any).secure_url;
+        }
+
         const user = await prisma.user.create({
             data: { 
                 email, 
@@ -20,6 +38,7 @@ export const createUser = async (req: Request, res: Response) => {
                 phoneNumber,
                 address,
                 gender,
+                photoUrl,
                 roles: {
                     connect: { name: 'SIMPLE' }
                 }
@@ -30,7 +49,6 @@ export const createUser = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Failed to create user', error });
     }
 };
-
 
 export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
