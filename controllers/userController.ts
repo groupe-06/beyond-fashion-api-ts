@@ -6,13 +6,28 @@ import cloudinary from '../config/cloudinary';
 
 export const createUser = async (req: Request, res: Response) => {
     const { email, password, lastname, firstname, phoneNumber, address, gender, confirm_password } = req.body;
+    const file = req.file; 
     try {
         if (password !== confirm_password) {
             return res.status(400).json({ message: 'Passwords do not match' });
         }
         
         const hashedPassword = cryptPassword(password);
-        const photoUrl = req.file ? (await cloudinary.uploader.upload(req.file.path)).secure_url : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
+        let photoUrl = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+        if (file) {
+            const media = await new Promise((resolve, reject) => {
+                const uploadStream = cloudinary.uploader.upload_stream(
+                    { resource_type: 'auto' },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result);
+                    }
+                );
+                uploadStream.end(file.buffer);  
+            });
+            photoUrl = (media as any).secure_url;
+        }
 
         const user = await prisma.user.create({
             data: { 
