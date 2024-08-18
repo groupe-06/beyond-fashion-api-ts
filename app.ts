@@ -1,6 +1,7 @@
 import express from 'express';
 import roleRoute from './routes/roleRoute';
 import userRoute from './routes/userRoute';
+import measurementRoute from './routes/measurementRoute';
 import 'dotenv/config';
 
 const app = express();
@@ -11,6 +12,7 @@ const uri = process.env.URI;
 app.use(express.json());
 app.use(`${uri}/roles`, roleRoute);
 app.use(`${uri}/users`, userRoute);
+app.use(`${uri}/measurements`, measurementRoute);
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
