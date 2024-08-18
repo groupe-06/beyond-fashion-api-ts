@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { cryptPassword, comparePasswords, generateToken  } from '../utils/utils';
+import { cryptPassword, comparePasswords, generateToken } from '../utils/utils';
 import prisma from '../database/db.config';
-
+import cloudinary from '../config/cloudinary';
 
 
 export const createUser = async (req: Request, res: Response) => {
@@ -10,7 +10,10 @@ export const createUser = async (req: Request, res: Response) => {
         if (password !== confirm_password) {
             return res.status(400).json({ message: 'Passwords do not match' });
         }
+        
         const hashedPassword = cryptPassword(password);
+        const photoUrl = req.file ? (await cloudinary.uploader.upload(req.file.path)).secure_url : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+
         const user = await prisma.user.create({
             data: { 
                 email, 
@@ -20,6 +23,7 @@ export const createUser = async (req: Request, res: Response) => {
                 phoneNumber,
                 address,
                 gender,
+                photoUrl,
                 roles: {
                     connect: { name: 'SIMPLE' }
                 }
@@ -30,7 +34,6 @@ export const createUser = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Failed to create user', error });
     }
 };
-
 
 export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
