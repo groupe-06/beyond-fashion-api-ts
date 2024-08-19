@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../database/db.config';
 
-export const addFavorite = async (req: Request, res: Response): Promise<Response> => {
+export const toggleFavorite = async (req: Request, res: Response): Promise<Response> => {
     try {
         const userId = (req as any).userId as number;
         const postId = parseInt(req.params.postId);
@@ -22,27 +22,37 @@ export const addFavorite = async (req: Request, res: Response): Promise<Response
         });
 
         if (existingFavorite) {
-            return res.status(400).json({ message: "This post is already in your favorites" });
+            
+            await prisma.favorite.delete({
+                where: { id: existingFavorite.id }
+            });
+
+            await prisma.post.update({
+                where: { id: postId },
+                data: { nbFavorites: post.nbFavorites > 0 ? post.nbFavorites - 1 : 0 },
+            });
+
+            return res.status(200).json({ message: "Post removed from favorites" });
+        } else {
+            const favorite = await prisma.favorite.create({
+                data: {
+                    postId,
+                    userId,
+                }
+            });
+
+            await prisma.post.update({
+                where: { id: postId },
+                data: { nbFavorites: post.nbFavorites + 1 },
+            });
+
+            return res.status(201).json({ message: "Post added to favorites successfully", favorite });
         }
-
-        const favorite = await prisma.favorite.create({
-            data: {
-                postId,
-                userId,
-            }
-        });
-
-
-        await prisma.post.update({
-            where: { id: postId },
-            data: { nbFavorites: post.nbFavorites + 1 },
-        });
-
-        return res.status(201).json({ message: "Post added to favorites successfully", favorite });
     } catch (error: any) {
         return res.status(500).json({ message: error.message });
     }
 };
+
 
 export const allFavorites = async (req: Request, res: Response): Promise<Response> => {
     try {
@@ -62,7 +72,6 @@ export const allFavorites = async (req: Request, res: Response): Promise<Respons
 };
 
 export const removeFavorite = async (req: Request, res: Response): Promise<Response> => {
-    
     try {
         const favoriteId = parseInt(req.params.id);
         const userId = (req as any).userId as number;

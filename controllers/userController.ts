@@ -3,26 +3,34 @@ import { cryptPassword, comparePasswords, generateToken } from '../utils/utils';
 import prisma from '../database/db.config';
 import cloudinary from '../config/cloudinary';
 
-
 export const createUser = async (req: Request, res: Response) => {
     try {
-        const { email, password, lastname, firstname, phoneNumber, address, gender, confirm_password } = req.body;
+        let { email, password, lastname, firstname, phoneNumber, address, gender, confirm_password } = req.body;
         const file = req.file; 
-      
+        
+        email = email?.trim().toLowerCase();
+        password = password?.trim();
+        confirm_password = confirm_password?.trim();
+        lastname = lastname?.trim();
+        firstname = firstname?.trim();
+        phoneNumber = phoneNumber?.trim();
+        address = address?.trim();
+        gender = gender?.trim();
+
         const userFromDB = await prisma.user.findUnique({ where: { email } });
         if (userFromDB) {
             return res.status(409).json({ message: 'User with this email already exists' });
         }
-      
-        if (password != confirm_password) {
+
+        if (password !== confirm_password) {
             return res.status(400).json({ message: 'Passwords do not match' });
         }
-      
+
         const role = await prisma.role.findFirst({ where: { name: 'SIMPLE' } });
         if (!role) {
             return res.status(404).json({ message: 'Role SIMPLE not found' });
         }
-        
+
         const hashedPassword = cryptPassword(password);
 
         let photoUrl = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
@@ -65,17 +73,17 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
     try {
         const user = await prisma.user.findUnique({
-            where: { email },
+            where: { email: email?.trim() },
         });
         if (!user) {
             return res.status(404).json({ message: 'Invalid email or password' });
         }
-        const isMatch =  comparePasswords(password, user.password);
+        const isMatch = comparePasswords(password?.trim(), user.password);
         if (!isMatch) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
         const token = await generateToken(user);
-        res.json({ message: 'User Logged successfully', ...user, token });
+        res.json({ message: 'User Logged in successfully', ...user, token });
     } catch (error) {
         res.status(500).json({ message: 'Failed to login', error });
     }
@@ -117,12 +125,13 @@ export const updateUser = async (req: Request, res: Response) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
+
         const updatedUser = await prisma.user.update({
             where: { id: Number(userId) },
             data: req.body
         });
 
-        res.status(201).json({ message: 'User updated successfully', user: updatedUser });
+        res.status(200).json({ message: 'User updated successfully', user: updatedUser });
     } catch (error) {
         res.status(500).json({ message: 'Failed to update user', error });
     }
@@ -144,8 +153,7 @@ export const updateProfile = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
     const { role } = req.body;
     try {
-
-        if(!userId){
+        if (!userId) {
             return res.status(401).json({ message: 'You are not authorized to update this profile.' });
         }
 
@@ -160,61 +168,59 @@ export const updateProfile = async (req: Request, res: Response) => {
             return res.status(404).json({ message: `User with ID ${userId} not found` });
         }
 
-        const roleFromDb =  await prisma.role.findUnique({
-            where: { name: role },
+        const roleFromDb = await prisma.role.findUnique({
+            where: { name: role?.trim() },
         });
 
-        if(!roleFromDb){
+        if (!roleFromDb) {
             return res.status(404).json({ message: `Role ${role} not found from DB` });
         }
 
         const hasAlreadyRole = user.roles.find(r => r.name === role);
 
-        if(hasAlreadyRole){
+        if (hasAlreadyRole) {
             return res.status(400).json({ message: `User is already assigned the role ${role}.` });
-        }    
+        }
 
-        if(role === "TAILOR"){
-            const role = user.roles.find(role => role.name === "SELLER");
-            if(role){
-                return res.status(400).json({ message: `User is already assigned to the role ${role.name}.` });
+        if (role === "TAILOR") {
+            const existingRole = user.roles.find(r => r.name === "SELLER");
+            if (existingRole) {
+                return res.status(400).json({ message: `User is already assigned to the role ${existingRole.name}.` });
             }
         }
 
-        if(role === "SELLER"){
-            const role = user.roles.find(role => role.name === "TAILOR");
-            if(role){
-                return res.status(400).json({ message: `User is already assigned to the role ${role.name}.` });
+        if (role === "SELLER") {
+            const existingRole = user.roles.find(r => r.name === "TAILOR");
+            if (existingRole) {
+                return res.status(400).json({ message: `User is already assigned to the role ${existingRole.name}.` });
             }
         }
 
-        
         let updatedUser;
-        if( role === "TAILOR"){
+        if (role === "TAILOR") {
             updatedUser = await prisma.user.update({
                 where: { id: Number(userId) },
-                data: { roles: { connect: [{ id: roleFromDb.id }] }, credit: 40 },
+                data: { 
+                    roles: { connect: [{ id: roleFromDb.id }] }, 
+                    credit: 40 
+                },
             });
-        }else {
+        } else {
             updatedUser = await prisma.user.update({
                 where: { id: Number(userId) },
                 data: { roles: { connect: [{ id: roleFromDb.id }] } },
             });
         }
-        
-        
-      
+
         res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
     } catch (error) {
         res.status(500).json({ message: 'Failed to update profile', error });
     }
 };
 
-
-
-export const blockUser = async (req:Request, res:Response) => {
-    const blockerId = (req as any).userId; 
-    const blockedId = parseInt(req.params.blockedId); 
+export const blockUser = async (req: Request, res: Response) => {
+    const blockerId = (req as any).userId;
+    const blockedId = parseInt(req.params.blockedId);
 
     try {
         if (!blockerId) {
@@ -260,12 +266,16 @@ export const blockUser = async (req:Request, res:Response) => {
 };
 
 export const unblockUser = async (req: Request, res: Response) => {
-    const blockerId = (req as any).userId; 
-    const blockedId = parseInt(req.params.blockedId); 
+    const blockerId = (req as any).userId;
+    const blockedId = parseInt(req.params.blockedId);
 
     try {
         if (!blockerId) {
             return res.status(401).json({ message: 'You are not authorized to unblock this user.' });
+        }
+
+        if (blockerId === blockedId) {
+            return res.status(400).json({ message: 'You cannot unblock yourself.' });
         }
 
         const existingBlock = await prisma.block.findUnique({
@@ -278,7 +288,7 @@ export const unblockUser = async (req: Request, res: Response) => {
         });
 
         if (!existingBlock) {
-            return res.status(404).json({ message: 'This user is not blocked.' });
+            return res.status(404).json({ message: 'Block not found.' });
         }
 
         await prisma.block.delete({
@@ -290,10 +300,8 @@ export const unblockUser = async (req: Request, res: Response) => {
             },
         });
 
-        return res.status(201).json({ message: 'User unblocked successfully' });
-
-        } catch (error) {
+        return res.status(200).json({ message: 'User unblocked successfully' });
+    } catch (error) {
         return res.status(500).json({ message: 'Failed to unblock user', error });
     }
-}
-
+};
