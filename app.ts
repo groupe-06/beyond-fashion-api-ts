@@ -9,14 +9,13 @@ import http from 'http';
 import postRouter from './routes/postRoute';
 import reportRouter from './routes/reportRouter';
 import reactionRouter from './routes/reactionpostRoute';
-import rateRouter from './routes/rateRoute'; 
+import rateRouter from './routes/rateRoute';
+import favoriteRouter from './routes/favoriteRoute'; 
 import 'dotenv/config';
-
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const uri = process.env.URI;
-
 
 app.use(express.json());
 app.use(`${uri}/roles`, roleRoute);
@@ -29,6 +28,7 @@ app.use(`${uri}/stories`, storyRoute);
 app.use(`${uri}/messages`, messageRoute);
 app.use(`${uri}/posts`, postRouter);
 app.use(`${uri}/rates`, rateRouter);
+app.use(`${uri}/favorites`, favoriteRouter); 
 
 const server = http.createServer(app);
 const io = new SocketIO(server, { cors: { origin: '*' } });
@@ -40,12 +40,8 @@ io.on('connection', (socket) => {
     });
     socket.on('disconnect', () => {
         console.log('User disconnected');
-    })
+    });
 });
-
-/*app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});*/
 
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
