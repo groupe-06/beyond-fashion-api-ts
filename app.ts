@@ -9,6 +9,8 @@ import http from 'http';
 import postRouter from './routes/postRoute';
 import reportRouter from './routes/reportRouter';
 import reactionRouter from './routes/reactionpostRoute';
+import userFollowRoute from './routes/userFollowRoute';
+import commentRoute from './routes/commentRoute';
 import 'dotenv/config';
 
 
@@ -27,6 +29,9 @@ app.use(`${uri}/post`, reactionRouter);
 app.use(`${uri}/stories`, storyRoute);
 app.use(`${uri}/messages`, messageRoute);
 app.use(`${uri}/posts`, postRouter);
+app.use(`${uri}/userFollow`, userFollowRoute);
+app.use(`${uri}/posts`, commentRoute);
+
 
 const server = http.createServer(app);
 const io = new SocketIO(server, { cors: { origin: '*' } });
