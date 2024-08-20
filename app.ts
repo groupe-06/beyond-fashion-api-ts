@@ -33,7 +33,7 @@ app.use(`${uri}/stories`, storyRoute);
 app.use(`${uri}/messages`, messageRoute);
 app.use(`${uri}/posts`, postRouter);
 app.use(`${uri}/userFollow`, userFollowRoute);
-app.use(`${uri}/posts`, commentRoute);
+app.use(`${uri}/comments`, commentRoute);
 app.use(`${uri}/rates`, rateRouter);
 app.use(`${uri}/favorites`, favoriteRouter); 
 app.use(`${uri}/views`, viewRoutes);
