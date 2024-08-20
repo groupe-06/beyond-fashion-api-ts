@@ -1,12 +1,3 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
-}
-
 model Role {
   id    Int    @id @default(autoincrement())
   name  String @unique
@@ -46,8 +37,58 @@ model User {
   maleMeasurements   MaleMeasurement[]
   blocks             Block[]             @relation("UserBlocks")
   blockedBy          Block[]             @relation("BlockedUsers")
+  articles           Article[]
 
   @@map("user")
+}
+
+model Article {
+  id            Int      @id @default(autoincrement())
+  name          String
+  stockQuantity Int
+  unitPrice     Float
+  photo         String
+  color         String
+  userId        Int // Le vendeur est maintenant référencé comme un User
+  user          User     @relation(fields: [userId], references: [id])
+  categoryId    Int
+  category      Category @relation(fields: [categoryId], references: [id])
+  tags          Tag[]
+  posts         Post[]
+
+  @@map("article")
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  image    String
+  unitId   Int?
+  unit     Unit?     @relation(fields: [unitId], references: [id])
+  articles Article[]
+
+  @@map("category")
+}
+
+model Tag {
+  id       Int       @id @default(autoincrement())
+  name     String
+  articles Article[]
+
+  @@map("tag")
+}
+
+model Unit {
+  id         Int        @id @default(autoincrement())
+  name       String
+  categories Category[]
+
+  @@map("unit")
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }
 
 model Block {
@@ -87,7 +128,7 @@ model UserFollow {
 model Post {
   id           Int           @id @default(autoincrement())
   content      String
-  description  String?       @db.VarChar(800)
+  description  String?
   status       Boolean       @default(true)
   views        Int           @default(0)
   authorId     Int
@@ -100,14 +141,15 @@ model Post {
   postDislikes PostDislike[]
   reports      Report[]
   favorites    Favorite[]
+  articles     Article[]
 
   @@map("post")
 }
 
 model Rate {
   id          Int      @id @default(autoincrement())
-  stars       Float    @db.Float
-  description String?  @db.VarChar(800)
+  stars       Float
+  description String?
   postId      Int
   post        Post     @relation(fields: [postId], references: [id])
   user        User     @relation(fields: [userId], references: [id])
@@ -119,12 +161,12 @@ model Rate {
 
 model Comment {
   id        Int       @id @default(autoincrement())
-  content   String    @db.VarChar(800)
+  content   String
   authorId  Int
   author    User      @relation(fields: [authorId], references: [id])
   post      Post      @relation(fields: [postId], references: [id])
   postId    Int
-  parentId  Int? // Nouvelle colonne pour les sous-commentaires
+  parentId  Int? // For sub-comments
   parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
   replies   Comment[] @relation("CommentReplies")
   createdAt DateTime  @default(now())
@@ -194,62 +236,48 @@ model Recharge {
   id         Int      @id @default(autoincrement())
   user       User     @relation("UserRecharges", fields: [userId], references: [id])
   userId     Int
-  receiverId Int?
-  receiver   User?    @relation("ReceivedRecharges", fields: [receiverId], references: [id])
-  code       BigInt   @unique
+  receiverId Int
+  receiver   User     @relation("ReceivedRecharges", fields: [receiverId], references: [id])
   amount     Float
-  isUsed     Boolean  @default(false)
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("recharge")
 }
 
 model Story {
-  id          Int      @id @default(autoincrement())
-  content     String
-  description String?  @db.VarChar(200)
-  authorId    Int
-  author      User     @relation(fields: [authorId], references: [id])
-  publishedAt DateTime @default(now())
-  expiresAt   DateTime
+  id        Int      @id @default(autoincrement())
+  content   String
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
 
   @@map("story")
 }
 
-enum Gender {
-  MALE
-  FEMALE
+model FemaleMeasurement {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+  height Int
+  weight Int
+  waist  Int
+  hips   Int
+  chest  Int
+
+  @@map("female_measurement")
 }
 
 model MaleMeasurement {
-  id           Int    @id @default(autoincrement())
-  user         User   @relation(fields: [userId], references: [id])
-  userId       Int
-  shoulder     Float?
-  chest        Float?
-  waist        Float?
-  hips         Float?
-  sleeveLength Float?
-  neck         Float?
-  back         Float?
-  armhole      Float?
-  thigh        Float?
-  calf         Float?
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+  height Int
+  weight Int
+  chest  Int
+  waist  Int
+  neck   Int
 
   @@map("male_measurement")
-}
-
-model FemaleMeasurement {
-  id       Int    @id @default(autoincrement())
-  user     User   @relation(fields: [userId], references: [id])
-  userId   Int
-  shoulder Float?
-  chest    Float?
-  waist    Float?
-  hips     Float?
-  bust     Float?
-  inseam   Float?
-  thigh    Float?
-
-  @@map("female_measurement")
 }
