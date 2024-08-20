@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../database/db.config';
 import cloudinary from '../config/cloudinary';
+import { sendMail } from '../utils/utils';
 
 
 export const createPost = async (req: Request, res: Response) => {
@@ -53,7 +54,9 @@ export const createPost = async (req: Request, res: Response) => {
         user.credit -= 2;
         await prisma.user.update({ where: { id: userId }, data: { credit: user.credit } });
 
-        if (user.credit <= 5) {
+        if (user.credit <= 6) {
+            //Send Main
+            sendMail(user.email, 'Alerte rechargement de crédit', `Il vous reste ${user.credit} credit. Pensez à recharger votre compte!!!.`);
             //Envoie de mail , notification et de sms
         }
 
@@ -152,8 +155,8 @@ export const deletePost = async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'You are not authorized to delete this post.' });
         }
 
-        const jourEnMs = 24 * 60 * 60 * 1000;
-        const isPostOlderThanOneDay = post.publishedAt.getTime() + jourEnMs < Date.now();
+        const jourEnMillis = 24 * 60 * 60 * 1000;
+        const isPostOlderThanOneDay = post.publishedAt.getTime() + jourEnMillis < Date.now();
 
         if (isPostOlderThanOneDay) {
 
