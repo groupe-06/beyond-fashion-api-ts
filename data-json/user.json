@@ -9,6 +9,24 @@
     "gender" : "MALE"
 },
 {
+    "email" : "ndiagalo259@gmail.com",
+    "password" : "passer123"
+},
+{
+    "firstname": "soda",
+    "lastname": "DIOP",
+    "email": "sodadiop065@gmail.com",
+    "password": "passer123",
+    "confirm_password": "passer123",                                   
+    "phoneNumber": "773063819",
+    "address": "hlm",
+    "gender": "FEMALE"
+  },
+  {
+    "email" : "sodadiop065@gmail.com",
+    "password" : "passer123"
+  },
+  {
     "firstname" : "Serigne",
     "lastname" : "Thiam",
     "email" : "serignembayet@gmail.com",
