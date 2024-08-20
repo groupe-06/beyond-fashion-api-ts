@@ -9,6 +9,7 @@ import http from 'http';
 import postRouter from './routes/postRoute';
 import reportRouter from './routes/reportRouter';
 import reactionRouter from './routes/reactionpostRoute';
+import CommentRouter from './routes/commentRoute';
 import 'dotenv/config';
 
 
@@ -27,6 +28,7 @@ app.use(`${uri}/post`, reactionRouter);
 app.use(`${uri}/stories`, storyRoute);
 app.use(`${uri}/messages`, messageRoute);
 app.use(`${uri}/posts`, postRouter);
+app.use(`${uri}/posts`, CommentRouter);
 
 const server = http.createServer(app);
 const io = new SocketIO(server, { cors: { origin: '*' } });
