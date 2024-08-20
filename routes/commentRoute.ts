@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { createComment, deleteComment } from '../controllers/commentController';
 import { getToken } from '../middlewares/authMiddlewares';
-import { validateCommentRequest } from '../validation/shemaValidator';
+import { validateCommentRequest } from '../middlewares/shemaValidator';
 
 
 const router = Router();
