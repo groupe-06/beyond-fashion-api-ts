@@ -14,7 +14,6 @@ import rateRouter from './routes/rateRoute';
 import favoriteRouter from './routes/favoriteRoute'; 
 import userFollowRoute from './routes/userFollowRoute';
 import commentRoute from './routes/commentRoute';
-import rateRouter from './routes/rateRoute'; 
 import viewRoutes from './routes/viewRoute';
 import 'dotenv/config';
 
