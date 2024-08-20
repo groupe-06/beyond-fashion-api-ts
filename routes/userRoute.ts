@@ -16,4 +16,5 @@ router.post('/login', login);
 router.put('/update-profile', getToken, updateProfile);
 router.post('/block/:blockedId',getToken, blockUser);
 
+
 export default router;

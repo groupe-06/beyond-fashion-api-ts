@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../database/db.config';
 import sendNotification from '../controllers/notificationController'; // Update the path if necessary
-
+import  sendReportWarningSms  from '../controllers/smsController';
 // Fonction pour supprimer les entités liées à un post
 async function deleteRelatedEntities(postId: number) {
     const deleteActions = [
@@ -35,19 +35,19 @@ export const reportPost = async (req: Request, res: Response) => {
 
          if (post.authorId === userId) {
             return res.status(400).json({ message: 'Vous ne pouvez pas signaler votre propre post.' });
-        } 
+        }  
  
-        const existingReport = await prisma.report.findFirst({
+         const existingReport = await prisma.report.findFirst({
             where: {
                 userId,
                 postId
             }
         });
-
-      if (existingReport) {
+ 
+       if (existingReport) {
             return res.status(400).json({ message: 'Vous avez déjà signalé ce post.' });
         } 
-
+ 
         await prisma.report.create({
             data: {
                 userId,
@@ -67,10 +67,15 @@ export const reportPost = async (req: Request, res: Response) => {
             });
             await sendNotification(post.authorId, 'Votre post a été supprimé en raison de multiples signalements.');
             return res.status(200).json({ message: 'Le post a été supprimé en raison de multiples signalements.' });
-        } else {
+        } 
+        
+          
+        else {
             await sendNotification(post.authorId, `Votre post a été signalé pour la raison suivante : ${reason}`);
         }
-
+        if (reportCount >= 1) {
+            await sendReportWarningSms(post.authorId, postId);
+          }
         res.status(201).json({ message: 'Votre signalement a été envoyé avec succès.' });
 
     } catch (error) {
