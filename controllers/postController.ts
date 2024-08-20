@@ -124,7 +124,6 @@ export const deletePost = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
 
     try {
-
         if (!userId) {
             return res.status(401).json({ message: 'User not found!!' });
         }
@@ -136,7 +135,7 @@ export const deletePost = async (req: Request, res: Response) => {
             },
         });
         
-        if (!user ||!user.roles.some(r => r.name === 'TAILOR')) {
+        if (!user || !user.roles.some(r => r.name === 'TAILOR')) {
             return res.status(401).json({ message: 'You are not authorized to delete this post' });
         }
         
@@ -152,28 +151,33 @@ export const deletePost = async (req: Request, res: Response) => {
             return res.status(404).json({ message: 'Post not found.' });
         }
 
-        if ((post.authorId as any)!== userId) {
+        if (post.authorId !== userId) {
             return res.status(401).json({ message: 'You are not authorized to delete this post.' });
         }
-            // si la date du post > 1jour : on ne peut plus remboursee
-        // user.credit += 2;
-        // await prisma.user.update({ where: { id: userId }, data: { credit: user.credit } });
 
-        // if (post.createdAt.getTime() + 24 * 60 * 60 * 1000 < Date.now()) {
-        //     return res.status(400).json({ message: 'This post can not be deleted because it has been created more than a day ago.' });
-        // } 
-        
-        // suppression du post
-        await prisma.post.delete({ where: { id: postId } });
-        
-        res.status(200).json({ message: 'Post deleted successfully' });
+        const jourEnMillis = 24 * 60 * 60 * 1000;
+        const isPostOlderThanOneDay = post.publishedAt.getTime() + jourEnMillis < Date.now();
 
-        await prisma.post.delete({ where: { id: postId } });
-        
-        res.status(200).json({ message: 'Post deleted successfully' });
+        if (isPostOlderThanOneDay) {
+
+            // await prisma.comment.deleteMany({ where: { postId } });
+            await prisma.postLike.deleteMany({ where: { postId } });
+            // await prisma.favorite.deleteMany({ where: { postId } });
+            // await prisma.rate.deleteMany({ where: { postId } });
+
+
+            await prisma.post.delete({ where: { id: postId } });
+            return res.status(200).json({ message: 'Post deleted successfully. No refund is possible as the post is older than one day.' });
+        } else {
+            
+            user.credit += 2;
+            await prisma.user.update({ where: { id: userId }, data: { credit: user.credit } });
+            await prisma.postLike.deleteMany({ where: { postId } });
+            await prisma.post.delete({ where: { id: postId } });
+            return res.status(200).json({ message: 'Post deleted successfully and credits refunded.' });
+        }
 
     } catch (error) {
         res.status(500).json({ message: 'Failed to delete post', error });
     }
-
 }
