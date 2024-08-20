@@ -198,9 +198,9 @@ model Recharge {
   id         Int      @id @default(autoincrement())
   user       User     @relation("UserRecharges", fields: [userId], references: [id])
   userId     Int
-  receiverId Int
-  receiver   User     @relation("ReceivedRecharges", fields: [receiverId], references: [id])
-  code       Int      @unique
+  receiverId Int?
+  receiver   User?    @relation("ReceivedRecharges", fields: [receiverId], references: [id])
+  code       BigInt   @unique
   amount     Float
   isUsed     Boolean  @default(false)
   createdAt  DateTime @default(now())
