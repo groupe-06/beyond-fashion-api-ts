@@ -14,6 +14,7 @@ import reactionRouter from './routes/reactionpostRoute';
 import userFollowRoute from './routes/userFollowRoute';
 import commentRoute from './routes/commentRoute';
 import rateRouter from './routes/rateRoute'; 
+import viewRoutes from './routes/viewRoute';
 import 'dotenv/config';
 
 
@@ -36,6 +37,7 @@ app.use(`${uri}/posts`, postRouter);
 app.use(`${uri}/userFollow`, userFollowRoute);
 app.use(`${uri}/posts`, commentRoute);
 app.use(`${uri}/rates`, rateRouter);
+app.use(`${uri}/views`, viewRoutes);
 
 const server = http.createServer(app);
 const io = new SocketIO(server, { cors: { origin: '*' } });

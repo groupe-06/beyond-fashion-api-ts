@@ -144,7 +144,7 @@ export const updateProfile = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
     const { role } = req.body;
     try {
-
+        
         if(!userId){
             return res.status(401).json({ message: 'You are not authorized to update this profile.' });
         }
