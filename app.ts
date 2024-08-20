@@ -1,7 +1,8 @@
 import express from 'express';
 import roleRoute from './routes/roleRoute';
 import userRoute from './routes/userRoute';
-import Rechargerouter from './routes/recharRoutes';
+import measurementRoute from './routes/measurementRoute';
+import rechargeRoute from './routes/rechargeRoute';
 import storyRoute from './routes/storyRoute';
 import messageRoute from './routes/messageRoute';
 import { Server as SocketIO } from 'socket.io';
@@ -9,8 +10,10 @@ import http from 'http';
 import postRouter from './routes/postRoute';
 import reportRouter from './routes/reportRouter';
 import reactionRouter from './routes/reactionpostRoute';
+
 import userFollowRoute from './routes/userFollowRoute';
 import commentRoute from './routes/commentRoute';
+import rateRouter from './routes/rateRoute'; 
 import 'dotenv/config';
 
 
@@ -22,7 +25,8 @@ const uri = process.env.URI;
 app.use(express.json());
 app.use(`${uri}/roles`, roleRoute);
 app.use(`${uri}/users`, userRoute);
-app.use(`${uri}/users`, Rechargerouter);
+app.use(`${uri}/measurements`, measurementRoute);
+app.use(`${uri}/recharge`, rechargeRoute);
 app.use(`${uri}/post`, postRouter);
 app.use(`${uri}/post`, reportRouter);
 app.use(`${uri}/post`, reactionRouter);
@@ -31,7 +35,7 @@ app.use(`${uri}/messages`, messageRoute);
 app.use(`${uri}/posts`, postRouter);
 app.use(`${uri}/userFollow`, userFollowRoute);
 app.use(`${uri}/posts`, commentRoute);
-
+app.use(`${uri}/rates`, rateRouter);
 
 const server = http.createServer(app);
 const io = new SocketIO(server, { cors: { origin: '*' } });
