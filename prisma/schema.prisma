@@ -95,7 +95,6 @@ model Post {
   author       User          @relation(fields: [authorId], references: [id])
   publishedAt  DateTime      @default(now())
   nbFavorites  Int           @default(0)
-  photoUrl     String?
   rates        Rate[]
   comments     Comment[]
   postLikes    PostLike[]

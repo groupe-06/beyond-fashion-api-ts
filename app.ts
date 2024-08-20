@@ -10,18 +10,17 @@ import http from 'http';
 import postRouter from './routes/postRoute';
 import reportRouter from './routes/reportRouter';
 import reactionRouter from './routes/reactionpostRoute';
-
+import rateRouter from './routes/rateRoute';
+import favoriteRouter from './routes/favoriteRoute'; 
 import userFollowRoute from './routes/userFollowRoute';
 import commentRoute from './routes/commentRoute';
 import rateRouter from './routes/rateRoute'; 
 import viewRoutes from './routes/viewRoute';
 import 'dotenv/config';
 
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 const uri = process.env.URI;
-
 
 app.use(express.json());
 app.use(`${uri}/roles`, roleRoute);
@@ -37,6 +36,7 @@ app.use(`${uri}/posts`, postRouter);
 app.use(`${uri}/userFollow`, userFollowRoute);
 app.use(`${uri}/posts`, commentRoute);
 app.use(`${uri}/rates`, rateRouter);
+app.use(`${uri}/favorites`, favoriteRouter); 
 app.use(`${uri}/views`, viewRoutes);
 
 const server = http.createServer(app);
@@ -49,12 +49,8 @@ io.on('connection', (socket) => {
     });
     socket.on('disconnect', () => {
         console.log('User disconnected');
-    })
+    });
 });
-
-/*app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});*/
 
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
