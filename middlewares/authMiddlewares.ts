@@ -7,13 +7,12 @@ export const getToken = (req: Request, res: Response, next:NextFunction) =>{
         return res.status(401).json({ message: 'Authorization header missing' });
     }
 
-    if (!authHeader.startsWith('Bearer ') || !authHeader.startsWith('Bearer')) {
+    if (!authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ message: 'Authorization header malformed' });
     }
 
 
-    const token = authHeader.replace('Bearer ', '');
-    
+    const token = authHeader.replace('Bearer ', '');    
 
     if(!token){
         return res.status(401).json({message: 'No token provided'});
