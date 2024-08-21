@@ -46,7 +46,7 @@ export const createPost = async (req: Request, res: Response) => {
                         else resolve(result);
                     }
                 );
-                uploadStream.end(file.buffer);  // Envoie du fichier en mémoire vers Cloudinary
+                uploadStream.end(file.buffer);
             });
             content = (media as any).secure_url;
         }
