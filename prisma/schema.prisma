@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -119,14 +118,17 @@ model Rate {
 }
 
 model Comment {
-  id        Int      @id @default(autoincrement())
-  content   String   @db.VarChar(800)
+  id        Int       @id @default(autoincrement())
+  content   String    @db.VarChar(800)
   authorId  Int
-  author    User     @relation(fields: [authorId], references: [id])
-  post      Post     @relation(fields: [postId], references: [id])
+  author    User      @relation(fields: [authorId], references: [id])
+  post      Post      @relation(fields: [postId], references: [id])
   postId    Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  parentId  Int? // Nouvelle colonne pour les sous-commentaires
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@map("comment")
 }

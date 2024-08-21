@@ -9,7 +9,7 @@ export const postSchema = z.object({
 
 // Nouveau schéma pour les commentaires/////////////////////////////////////////////////////////////
 export const commentSchema = z.object({
-  content: z.string().max(800, "Le commentaire ne doit pas dépasser 800 caractères").min(1, "content is required"),
+  content: z.string().max(800, "Le commentaire ne doit pas dépasser 800 caractères").min(3, "Le commentaire doit avoir minimum 3 caractères"),
 });
 
 // Middleware existant pour la validation des posts/////////////////////////////////////////////////
