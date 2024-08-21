@@ -46,7 +46,7 @@ export const createPost = async (req: Request, res: Response) => {
                         else resolve(result);
                     }
                 );
-                uploadStream.end(file.buffer);  // Envoie du fichier en mémoire vers Cloudinary
+                uploadStream.end(file.buffer);
             });
             content = (media as any).secure_url;
         }
@@ -160,10 +160,10 @@ export const deletePost = async (req: Request, res: Response) => {
 
         if (isPostOlderThanOneDay) {
 
-            // await prisma.comment.deleteMany({ where: { postId } });
+            await prisma.comment.deleteMany({ where: { postId } });
             await prisma.postLike.deleteMany({ where: { postId } });
-            // await prisma.favorite.deleteMany({ where: { postId } });
-            // await prisma.rate.deleteMany({ where: { postId } });
+            await prisma.favorite.deleteMany({ where: { postId } });
+            await prisma.rate.deleteMany({ where: { postId } });
 
 
             await prisma.post.delete({ where: { id: postId } });
@@ -172,7 +172,12 @@ export const deletePost = async (req: Request, res: Response) => {
             
             user.credit += 2;
             await prisma.user.update({ where: { id: userId }, data: { credit: user.credit } });
+
+            await prisma.comment.deleteMany({ where: { postId } });
             await prisma.postLike.deleteMany({ where: { postId } });
+            await prisma.favorite.deleteMany({ where: { postId } });
+            await prisma.rate.deleteMany({ where: { postId } });
+            
             await prisma.post.delete({ where: { id: postId } });
             return res.status(200).json({ message: 'Post deleted successfully and credits refunded.' });
         }
