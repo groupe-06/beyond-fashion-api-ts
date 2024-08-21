@@ -119,17 +119,20 @@ model Rate {
 }
 
 model Comment {
-  id        Int      @id @default(autoincrement())
-  content   String   @db.VarChar(800)
+  id        Int       @id @default(autoincrement())
+  content   String
+  author    User      @relation(fields: [authorId], references: [id])
   authorId  Int
-  author    User     @relation(fields: [authorId], references: [id])
-  post      Post     @relation(fields: [postId], references: [id])
+  post      Post      @relation(fields: [postId], references: [id])
   postId    Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  parentId  Int?     
+  parent    Comment?  @relation("CommentParent", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentParent")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   @@map("comment")
 }
+
 
 model PostDislike {
   id        Int      @id @default(autoincrement())
