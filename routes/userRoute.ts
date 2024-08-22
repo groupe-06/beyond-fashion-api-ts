@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { createUser, getAllUsers, getUserById, deleteUser, updateUser, login, updateProfile, blockUser } from '../controllers/userController';
 import { getToken } from '../middlewares/authMiddlewares';
 import { validateUserRequest } from '../middlewares/shemaValidator';
+import { createCommande,deleteCommandeArticle,completePurchase} from '../controllers/commandeController';
 import  upload  from '../config/multer';
 
 
@@ -16,6 +17,8 @@ router.delete('/delete/:id', deleteUser);
 router.post('/login', login);
 router.put('/update-profile', getToken, updateProfile);
 router.post('/block/:blockedId',getToken, blockUser);
-
-
+router.post('/commande', getToken, createCommande);
+router.post('/command', getToken, createCommande);
+router.delete('/delete-article', deleteCommandeArticle);
+router.post('/complete-purchase', getToken, completePurchase);
 export default router;
