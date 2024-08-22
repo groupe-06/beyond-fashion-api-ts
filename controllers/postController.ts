@@ -3,40 +3,40 @@ import prisma from '../database/db.config';
 import cloudinary from '../config/cloudinary';
 import { sendMail } from '../utils/utils';
 
-
 export const createPost = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
-    let { content, description } = req.body;
+    const { content, description, tags } = req.body;
     const file = req.file;
-    try {
 
+    try {
         if (!userId) {
-            return res.status(401).json({ message: 'User not found !!' });
+            return res.status(401).json({ message: 'User not found!' });
         }
 
+        // Fetch user with roles
         const user = await prisma.user.findUnique({
             where: { id: userId },
             include: {
                 roles: true,
             },
         });
-      
-       if (!user) {
-            return res.status(401).json({ message: `User with ID ${userId} not found!!` });
+
+        if (!user) {
+            return res.status(401).json({ message: `User with ID ${userId} not found!` });
         }
 
+        // Check if user has the 'TAILOR' role
         if (!user.roles.some(r => r.name === 'TAILOR')) {
             return res.status(401).json({ message: 'You are not authorized to create a post' });
         }
-      
-        if (user.credit == 0) {
+
+        // Check user credit
+        if (user.credit === 0) {
             return res.status(400).json({ message: 'You are out of credit. Please refill your credit.' });
         }
-      
-        if (!content) {
-            return res.status(400).json({ message: 'Content is required.' });
-        }
 
+        // Handle media upload if file is present
+        let mediaUrl: string | undefined;
         if (file) {
             const media = await new Promise((resolve, reject) => {
                 const uploadStream = cloudinary.uploader.upload_stream(
@@ -48,32 +48,57 @@ export const createPost = async (req: Request, res: Response) => {
                 );
                 uploadStream.end(file.buffer);
             });
-            content = (media as any).secure_url;
+            mediaUrl = (media as any).secure_url;
+        }
+
+        if (!content) {
+            return res.status(400).json({ message: 'Content is required.' });
+        }
+
+        // Validate tags
+        const validTags: { id: number }[] = [];
+        if (tags && tags.length > 0) {
+            for (const tagName of tags) {
+                const tag = await prisma.tag.findUnique({
+                    where: { name: tagName },
+                });
+                if (!tag) {
+                    return res.status(400).json({ message: `Tag "${tagName}" does not exist.` });
+                }
+                validTags.push({ id: tag.id });
+            }
         }
         
+
+        // Deduct credit from user
         user.credit -= 2;
         await prisma.user.update({ where: { id: userId }, data: { credit: user.credit } });
 
         if (user.credit <= 6) {
-            //Send Main
-            sendMail(user.email, 'Alerte rechargement de crédit', `Il vous reste ${user.credit} credit. Pensez à recharger votre compte!!!.`);
-            //Envoie de mail , notification et de sms
+            // Send alert for low credit
+            sendMail(user.email, 'Credit Refill Alert', `You have ${user.credit} credits left. Please consider refilling your account.`);
         }
 
+        // Create post
         const post = await prisma.post.create({
             data: {
-                content,
+                content: mediaUrl || content,
                 description: description || '',
                 author: { connect: { id: userId } },
+                tag: {
+                    connect: validTags,
+                },
             },
         });
+
         return res.status(201).json({ message: 'Post created successfully', post });
 
     } catch (error) {
         return res.status(500).json({ message: 'Failed to create post', error });
     }
-
 };
+
+
 
 
 export const updatePost = async(req:Request, res:Response) => {
