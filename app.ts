@@ -15,6 +15,7 @@ import favoriteRouter from './routes/favoriteRoute';
 import userFollowRoute from './routes/userFollowRoute';
 import commentRoute from './routes/commentRoute';
 import viewRoutes from './routes/viewRoute';
+import tagRoute from './routes/tagRoute';
 import 'dotenv/config';
 
 const app = express();
@@ -37,6 +38,8 @@ app.use(`${uri}/comments`, commentRoute);
 app.use(`${uri}/rates`, rateRouter);
 app.use(`${uri}/favorites`, favoriteRouter); 
 app.use(`${uri}/views`, viewRoutes);
+app.use(`${uri}/tags`, tagRoute);
+
 
 const server = http.createServer(app);
 const io = new SocketIO(server, { cors: { origin: '*' } });
