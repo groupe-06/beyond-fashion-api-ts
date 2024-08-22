@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -47,6 +46,8 @@ model User {
   maleMeasurements   MaleMeasurement[]
   blocks             Block[]             @relation("UserBlocks")
   blockedBy          Block[]             @relation("BlockedUsers")
+  articleByUser      Article[]
+  commandeByUser Commande[] 
 
   @@map("user")
 }
@@ -101,8 +102,50 @@ model Post {
   postDislikes PostDislike[]
   reports      Report[]
   favorites    Favorite[]
+  tag     Tag[]
 
   @@map("post")
+}
+model Tag {
+  id       Int       @id @default(autoincrement())
+  name     String
+  articles Article[]
+  posts     Post[]
+
+  @@map("tag")
+}
+model Article {
+  id            Int      @id @default(autoincrement())
+  name          String
+  stockQuantity Int
+  unitPrice     Float
+  photo         String
+  color      String?
+  userId        Int 
+  user          User     @relation(fields: [userId], references: [id])
+  categoryId    Int
+  category      Category @relation(fields: [categoryId], references: [id])
+  tags          Tag[]
+  commandeArticles CommandeArticle[]
+
+  @@map("article")
+}
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  image    String
+ unitId    Int
+  Unit     Unit @relation(fields: [unitId ], references: [id])
+  articles Article[]
+
+  @@map("category")
+}
+model Unit {
+  id         Int        @id @default(autoincrement())
+  name       String
+  categories Category[]
+
+  @@map("unit")
 }
 
 model Rate {
@@ -119,14 +162,17 @@ model Rate {
 }
 
 model Comment {
-  id        Int      @id @default(autoincrement())
-  content   String   @db.VarChar(800)
+  id        Int       @id @default(autoincrement())
+  content   String    @db.VarChar(800)
   authorId  Int
-  author    User     @relation(fields: [authorId], references: [id])
-  post      Post     @relation(fields: [postId], references: [id])
+  author    User      @relation(fields: [authorId], references: [id])
+  post      Post      @relation(fields: [postId], references: [id])
   postId    Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  parentId  Int? // Nouvelle colonne pour les sous-commentaires
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@map("comment")
 }
@@ -250,4 +296,27 @@ model FemaleMeasurement {
   thigh    Float?
 
   @@map("female_measurement")
+}
+
+model Commande {
+  id             Int           @id @default(autoincrement())
+  userId         Int
+  user           User          @relation(fields: [userId], references: [id])
+  commandeArticles CommandeArticle[]
+  totalPrice     Float
+  date           DateTime      @default(now())
+
+  @@map("commande")
+}
+
+model CommandeArticle {
+  id             Int           @id @default(autoincrement())
+  commandeId     Int
+  commande       Commande      @relation(fields: [commandeId], references: [id])
+  articleId      Int
+  article        Article       @relation(fields: [articleId], references: [id])
+  quantity       Int
+  prixUnitaire   Float
+  
+  @@map("commande_article")
 }

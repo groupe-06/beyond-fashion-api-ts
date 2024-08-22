@@ -8,4 +8,5 @@ const router = Router();
 
 router.post('/:postId/comment', getToken, validateCommentRequest, createComment);
 router.delete('/comment/:commentId', getToken, deleteComment);
+router.post('/:postId/comment', getToken, validateCommentRequest, createComment);
 export default router;
