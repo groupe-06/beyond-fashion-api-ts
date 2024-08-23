@@ -62,4 +62,6 @@ export const deleteCategory = async (req: Request, res: Response) => {
       return res.status(500).json({ message: 'An unknown error occurred' });
     }
   }
+
 };
+

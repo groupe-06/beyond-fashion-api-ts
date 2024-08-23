@@ -108,7 +108,7 @@ model Post {
 }
 model Tag {
   id       Int       @id @default(autoincrement())
-  name     String
+  name     String    @unique
   articles Article[]
   posts     Post[]
 
@@ -134,7 +134,7 @@ model Category {
   id       Int       @id @default(autoincrement())
   name     String
   image    String
- unitId    Int
+ unitId   Int
   Unit     Unit @relation(fields: [unitId ], references: [id])
   articles Article[]
 
@@ -320,3 +320,4 @@ model CommandeArticle {
   
   @@map("commande_article")
 }
+
