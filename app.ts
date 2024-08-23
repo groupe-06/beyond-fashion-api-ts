@@ -15,6 +15,11 @@ import favoriteRouter from './routes/favoriteRoute';
 import userFollowRoute from './routes/userFollowRoute';
 import commentRoute from './routes/commentRoute';
 import viewRoutes from './routes/viewRoute';
+import articleRoute from './routes/articleRoute'; // Import articleCommande route
+import categoryRoute from './routes/categoryRoute';
+import unitRouter from './routes/unitRoute'; // Importez votre routeur d'unités
+import tagRoute from './routes/tagRoute'; // Importez votre route
+import commandeRouter from './routes/commandeRoute'
 import searchRoute from './routes/searchRoute';
 import 'dotenv/config';
 
@@ -25,6 +30,7 @@ const uri = process.env.URI;
 app.use(express.json());
 app.use(`${uri}/roles`, roleRoute);
 app.use(`${uri}/users`, userRoute);
+app.use(`${uri}/users`,commandeRouter);
 app.use(`${uri}/measurements`, measurementRoute);
 app.use(`${uri}/recharge`, rechargeRoute);
 app.use(`${uri}/post`, postRouter);
@@ -38,7 +44,12 @@ app.use(`${uri}/comments`, commentRoute);
 app.use(`${uri}/rates`, rateRouter);
 app.use(`${uri}/favorites`, favoriteRouter); 
 app.use(`${uri}/views`, viewRoutes);
+app.use(`${uri}/articles`, articleRoute);
+app.use(`${uri}/categories`, categoryRoute);
+app.use(`${uri}/units`, unitRouter);
+app.use(`${uri}/tags`, tagRoute);
 app.use(`${uri}/search`, searchRoute);
+
 
 const server = http.createServer(app);
 const io = new SocketIO(server, { cors: { origin: '*' } });
