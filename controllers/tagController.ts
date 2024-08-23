@@ -35,3 +35,5 @@ export const createTag = async (req: Request, res: Response) => {
       return res.status(500).json({ message: 'Failed to create tag', error });
     }
   };
+
+

@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import {Express, Request, Response } from 'express';
 import prisma from '../database/db.config';
 import cloudinary from '../config/cloudinary';
 import { sendMail } from '../utils/utils';
@@ -15,9 +15,7 @@ export const createPost = async (req: Request, res: Response) => {
 
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            include: {
-                roles: true,
-            },
+            include: { roles: true },
         });
 
         if (!user) {
@@ -28,9 +26,12 @@ export const createPost = async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'You are not authorized to create a post' });
         }
 
-        if (user.credit === 0) {
+        if (user.credit == 0) {
             return res.status(400).json({ message: 'You are out of credit. Please refill your credit.' });
         }
+
+        if (!content) {
+            return res.status(400).json({ message: 'Content is required.' });
 
         if (!file && !content) {
             return res.status(400).json({ message: 'Either file or text content is required.' });
@@ -50,6 +51,17 @@ export const createPost = async (req: Request, res: Response) => {
             });
             mediaUrl = (media as any).secure_url;
         }
+
+        // Ensure tags is an array
+        if (typeof tags === 'string') {
+            try {
+                tags = JSON.parse(tags);
+            } catch (e) {
+                tags = [tags];
+            }
+        }
+        if (!Array.isArray(tags)) {
+            tags = tags ? [tags] : [];
 
         const validTags: { id: number }[] = [];
         if (tags && tags.length > 0) {
@@ -77,6 +89,17 @@ export const createPost = async (req: Request, res: Response) => {
                 description: description || '',
                 author: { connect: { id: userId } },
                 tag: {
+                    connectOrCreate: tags.map((tagName:string) => ({
+                        where: { name: tagName },
+                        create: { name: tagName },
+                    })),
+                },
+            },
+            include: {
+                tag: true,
+            },
+        });
+
                     connect: validTags,
                 },
             },
@@ -85,25 +108,24 @@ export const createPost = async (req: Request, res: Response) => {
         return res.status(201).json({ message: 'Post created successfully', post });
 
     } catch (error) {
-        return res.status(500).json({ message: 'Failed to create post', error });
+        console.error('Error in createPost:', error);
+        return res.status(500).json({ 
+            message: 'Failed to create post', 
+            error: error instanceof Error ? error.message : String(error)
+        });
     }
 };
-
-
 
 
 export const updatePost = async(req:Request, res:Response) => {
     const postId = parseInt(req.params.id);
     const userId = (req as any).userId;
-    const { content, description } = req.body;
-
+    let { content, description, tags } = req.body;
+    
     try {
-
         if (!userId) {
             return res.status(401).json({ message: 'User not found !!' });
         }
-        
-        // console.log(`userId: ${userId}`);
         
         const user = await prisma.user.findUnique({
             where: { id: userId },
@@ -115,23 +137,59 @@ export const updatePost = async(req:Request, res:Response) => {
         if (!postId) {
             return res.status(400).json({ message: 'Post ID is required.' });
         }
-        // console.log(`postId: ${postId}`);
         
-        const post = await prisma.post.findUnique({ where: { id: postId } });
+        const post = await prisma.post.findUnique({ 
+            where: { id: postId },
+            include: { tag: true }
+        });
         if (!post) {
             return res.status(404).json({ message: 'Post not found.' });
         }
         
-        if ((post.authorId as any)!== userId) {
-            // console.log(`postAutor: ${(post.authorId)}`);
+        if (post.authorId !== userId) {
             return res.status(401).json({ message: 'You are not authorized to update this post.' });
         }
 
-        await prisma.post.update({ where: { id: postId }, data: { content, description } });
-        return res.status(201).json({ message: 'Post updated successfully' });
+        // Ensure tags is an array
+        if (typeof tags === 'string') {
+            try {
+                tags = JSON.parse(tags);
+            } catch (e) {
+                tags = [tags];
+            }
+        }
+        if (!Array.isArray(tags)) {
+            tags = tags ? [tags] : [];
+        }
+
+        console.log('Tags after processing:', tags);
+
+        const updatedPost = await prisma.post.update({ 
+            where: { id: postId }, 
+            data: { 
+                content, 
+                description,
+                tag: {
+                    set: [], // Remove all existing tags
+                    connectOrCreate: tags.map((tagName:string) => ({
+                        where: { name: tagName },
+                        create: { name: tagName },
+                    })),
+                }
+            },
+            include: {
+                tag: true,
+            }
+        });
+
+        return res.status(200).json({ message: 'Post updated successfully', post: updatedPost });
 
     } catch (error) {
-        return res.status(500).json({ message: 'Failed to update post', error });
+        console.error('Error in updatePost:', error);
+        return res.status(500).json({ 
+            message: 'Failed to update post', 
+            error: error instanceof Error ? error.message : String(error)
+        });
     }
 };
 
