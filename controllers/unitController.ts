@@ -1,3 +1,4 @@
+
 import { Request, Response } from 'express';
 import prisma from '../database/db.config'; // Assurez-vous que c'est la bonne instance Prisma
 
@@ -20,3 +21,4 @@ export const createUnit = async (req: Request, res: Response) => {
     }
   }
 };
+

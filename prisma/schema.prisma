@@ -320,3 +320,4 @@ model CommandeArticle {
   
   @@map("commande_article")
 }
+

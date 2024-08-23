@@ -11,3 +11,4 @@ router.delete('/delete/:commentId', getToken, deleteComment);
 router.get('/all/:postId', getCommentsWithReplies);
 
 export default router;
+

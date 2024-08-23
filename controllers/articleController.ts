@@ -1,8 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '../database/db.config';
 import { Request, Response } from 'express';
 import  sendNotification  from './notificationController';
 import  sendSMS  from '../utils/sendSms';
-const prisma = new PrismaClient();
+
 
 // Création d'un article
 export const createArticle = async (req: Request, res: Response) => {
@@ -121,6 +121,12 @@ export const deleteArticle = async (req: Request, res: Response) => {
             return res.status(403).json({ message: 'You do not have permission to delete this article' });
         }
 
+        // Supprimer l'article
+        await prisma.article.delete({
+            where: { id: parseInt(articleId) },
+        });
+
+        return res.status(200).json({ message: 'Article deleted successfully' });
         // Get the list of users who ordered this article
         const commandes = await prisma.commandeArticle.findMany({
             where: { articleId: parseInt(articleId) },

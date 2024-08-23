@@ -22,7 +22,10 @@ import tagRoute from './routes/tagRoute'; // Importez votre route
 import commandeRouter from './routes/commandeRoute'
 import searchRoute from './routes/searchRoute';
 import 'dotenv/config';
-
+import articleRoute from './routes/articleRoute'; // Import articleCommande route
+import categoryRoute from './routes/categoryRoutes';
+import unitRouter from './routes/unitRoutes'; // Importez votre routeur d'unités
+import tagRoute from './routes/tagRoute'; // Importez votre route
 const app = express();
 const PORT = process.env.PORT || 3000;
 const uri = process.env.URI;

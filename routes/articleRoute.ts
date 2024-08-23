@@ -7,5 +7,5 @@ const router = Router();
 router.post('/', verifyToken, createArticle);
 router.put('/:articleId', verifyToken, updateArticle);
 router.delete('/:articleId', verifyToken, deleteArticle);
-
 export default router;
+
