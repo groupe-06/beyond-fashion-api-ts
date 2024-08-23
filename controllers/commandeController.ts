@@ -33,16 +33,11 @@ export const createCommande = async (req: Request, res: Response) => {
         let totalPrice = 0;
 
         const commande = await prisma.$transaction(async (prisma) => {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
 
+            // Recherche d'une commande existante pour cet utilisateur
             let existingCommande = await prisma.commande.findFirst({
                 where: {
-                    userId: userId,
-                    date: {
-                        gte: today,
-                        lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
-                    }
+                    userId: userId
                 },
                 include: { commandeArticles: true }
             });
@@ -53,7 +48,6 @@ export const createCommande = async (req: Request, res: Response) => {
                     data: {
                         userId: userId,
                         totalPrice: 0,
-                        date: today,
                         commandeArticles: {
                             create: []
                         }
@@ -62,7 +56,7 @@ export const createCommande = async (req: Request, res: Response) => {
                 });
             }
 
-            // Initializing totalPrice with the current total from existing articles
+            // Initialisation du prix total avec le total des articles existants
             totalPrice = existingCommande.commandeArticles.reduce((sum, item) => sum + item.quantity * item.prixUnitaire, 0);
 
             for (const item of articles) {
@@ -91,8 +85,6 @@ export const createCommande = async (req: Request, res: Response) => {
                         where: { id: existingArticleInCommande.id },
                         data: { quantity: newQuantity, prixUnitaire: article.unitPrice }
                     });
-
-                    console.log(`Updated article: ID = ${item.articleId}, Quantity = ${newQuantity}, Unit Price = ${article.unitPrice}`);
                 } else {
                     // Ajout d'un nouvel article à la commande existante
                     await prisma.commandeArticle.create({
@@ -103,11 +95,9 @@ export const createCommande = async (req: Request, res: Response) => {
                             prixUnitaire: article.unitPrice
                         }
                     });
-
-                    console.log(`Added article: ID = ${item.articleId}, Quantity = ${item.quantity}, Unit Price = ${article.unitPrice}`);
                 }
 
-                // Update totalPrice with the newly added or updated article
+                // Mise à jour du prix total avec le nouvel article ajouté ou mis à jour
                 totalPrice += item.quantity * article.unitPrice;
             }
 
@@ -117,12 +107,10 @@ export const createCommande = async (req: Request, res: Response) => {
                 data: { totalPrice: totalPrice }
             });
 
-            console.log(`Final Total Price: ${totalPrice}`);
-
             return existingCommande;
         });
 
-        // Response with details of the command and its articles
+        // Réponse avec les détails de la commande et de ses articles
         const updatedCommande = await prisma.commande.findUnique({
             where: { id: commande.id },
             include: { commandeArticles: true }
@@ -138,10 +126,16 @@ export const createCommande = async (req: Request, res: Response) => {
             }))
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'An error occurred while processing the order.', error: error.message });
+        if (error instanceof Error) {
+            console.error(error.message);
+            res.status(500).json({ message: 'An error occurred while processing the order.', error: error.message });
+        } else {
+            console.error('Unexpected error', error);
+            res.status(500).json({ message: 'An unexpected error occurred.' });
+        }
     }
 };
+
 
 // Function to handle deletion of an article from a commande and update the total price
 export const deleteCommandeArticle = async (req: Request, res: Response) => {
@@ -184,10 +178,17 @@ export const deleteCommandeArticle = async (req: Request, res: Response) => {
 
         res.status(200).json({ message: 'Article removed and commande updated.' });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'An error occurred while deleting the article from the order.', error: error.message });
+        // Vérifiez si l'erreur est une instance d'Error
+        if (error instanceof Error) {
+            console.error(error.message);
+            res.status(500).json({ message: 'An error occurred while deleting the article from the order.', error: error.message });
+        } else {
+            console.error('Unexpected error', error);
+            res.status(500).json({ message: 'An unexpected error occurred.' });
+        }
     }
 };
+
 export const completePurchase = async (req: Request, res: Response) => {
     const { commandeId } = req.body;
     const userId = (req as any).userId; // Assume this is set by authentication middleware
@@ -252,8 +253,13 @@ export const completePurchase = async (req: Request, res: Response) => {
         }
 
         res.status(200).json({ message: 'Purchase completed and command deleted successfully.' });
-    } catch (error) {
+    } catch (error: unknown) {
         console.error(error);
-        res.status(500).json({ message: 'An error occurred while completing the purchase.', error: error.message });
+
+        if (error instanceof Error) {
+            res.status(500).json({ message: 'An error occurred while completing the purchase.', error: error.message });
+        } else {
+            res.status(500).json({ message: 'An unknown error occurred.' });
+        }
     }
 };

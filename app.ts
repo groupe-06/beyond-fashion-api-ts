@@ -15,6 +15,10 @@ import favoriteRouter from './routes/favoriteRoute';
 import userFollowRoute from './routes/userFollowRoute';
 import commentRoute from './routes/commentRoute';
 import viewRoutes from './routes/viewRoute';
+import articleRoute from './routes/articleRoute'; // Import articleCommande route
+import categoryRoute from './routes/categoryRoute';
+import unitRouter from './routes/unitRoute'; // Importez votre routeur d'unités
+import tagRoute from './routes/tagRoute'; // Importez votre route
 import 'dotenv/config';
 
 const app = express();
@@ -37,7 +41,10 @@ app.use(`${uri}/comments`, commentRoute);
 app.use(`${uri}/rates`, rateRouter);
 app.use(`${uri}/favorites`, favoriteRouter); 
 app.use(`${uri}/views`, viewRoutes);
-
+app.use(`${uri}/articles`, articleRoute);
+app.use(`${uri}/categories`, categoryRoute);
+app.use(`${uri}/units`, unitRouter);
+app.use(`${uri}/tags`, tagRoute);
 const server = http.createServer(app);
 const io = new SocketIO(server, { cors: { origin: '*' } });
 

@@ -55,7 +55,7 @@ async function main() {
       unitPrice: 10.0,
       photo: 'coton-imprime.png',
       color: 'Bleu',
-      userId: 2,  // Assurez-vous que l'utilisateur avec id=1 existe
+      userId: 3,  // Assurez-vous que l'utilisateur avec id=1 existe
       categoryId: categoryFabric.id,
     },
   });
@@ -67,7 +67,7 @@ async function main() {
       unitPrice: 2.5,
       photo: 'fil-polyester.png',
       color: 'Blanc',
-      userId: 2,  // Assurez-vous que l'utilisateur avec id=1 existe
+      userId: 3,  // Assurez-vous que l'utilisateur avec id=1 existe
       categoryId: categoryThread.id,
     },
   });
@@ -79,7 +79,7 @@ async function main() {
       unitPrice: 1.0,
       photo: 'aiguilles.png',
       color: 'Argent',
-      userId: 2,  // Assurez-vous que l'utilisateur avec id=1 existe
+      userId: 3,  // Assurez-vous que l'utilisateur avec id=1 existe
       categoryId: categoryNeedle.id,
     },
   });
