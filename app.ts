@@ -19,6 +19,7 @@ import articleRoute from './routes/articleRoute'; // Import articleCommande rout
 import categoryRoute from './routes/categoryRoute';
 import unitRouter from './routes/unitRoute'; // Importez votre routeur d'unités
 import tagRoute from './routes/tagRoute'; // Importez votre route
+import commandeRouter from './routes/commandeRoute'
 import 'dotenv/config';
 
 const app = express();
@@ -28,6 +29,7 @@ const uri = process.env.URI;
 app.use(express.json());
 app.use(`${uri}/roles`, roleRoute);
 app.use(`${uri}/users`, userRoute);
+app.use(`${uri}/users`,commandeRouter);
 app.use(`${uri}/measurements`, measurementRoute);
 app.use(`${uri}/recharge`, rechargeRoute);
 app.use(`${uri}/post`, postRouter);
