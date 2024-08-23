@@ -5,12 +5,12 @@ import { sendMail } from '../utils/utils';
 
 export const createPost = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
-    let { content, description, tags } = req.body;
+    const { content, description, tags } = req.body;
     const file = req.file;
 
     try {
         if (!userId) {
-            return res.status(401).json({ message: 'User not found !!' });
+            return res.status(401).json({ message: 'User not found!' });
         }
 
         const user = await prisma.user.findUnique({
@@ -19,7 +19,7 @@ export const createPost = async (req: Request, res: Response) => {
         });
 
         if (!user) {
-            return res.status(401).json({ message: `User with ID ${userId} not found!!` });
+            return res.status(401).json({ message: `User with ID ${userId} not found!` });
         }
 
         if (!user.roles.some(r => r.name === 'TAILOR')) {
@@ -32,8 +32,12 @@ export const createPost = async (req: Request, res: Response) => {
 
         if (!content) {
             return res.status(400).json({ message: 'Content is required.' });
+
+        if (!file && !content) {
+            return res.status(400).json({ message: 'Either file or text content is required.' });
         }
 
+        let mediaUrl: string | undefined;
         if (file) {
             const media = await new Promise((resolve, reject) => {
                 const uploadStream = cloudinary.uploader.upload_stream(
@@ -45,7 +49,7 @@ export const createPost = async (req: Request, res: Response) => {
                 );
                 uploadStream.end(file.buffer);
             });
-            content = (media as any).secure_url;
+            mediaUrl = (media as any).secure_url;
         }
 
         // Ensure tags is an array
@@ -58,11 +62,30 @@ export const createPost = async (req: Request, res: Response) => {
         }
         if (!Array.isArray(tags)) {
             tags = tags ? [tags] : [];
+
+        const validTags: { id: number }[] = [];
+        if (tags && tags.length > 0) {
+            for (const tagName of tags) {
+                const tag = await prisma.tag.findUnique({
+                    where: { name: tagName },
+                });
+                if (!tag) {
+                    return res.status(400).json({ message: `Tag "${tagName}" does not exist.` });
+                }
+                validTags.push({ id: tag.id });
+            }
+        }
+
+        user.credit -= 2;
+        await prisma.user.update({ where: { id: userId }, data: { credit: user.credit } });
+
+        if (user.credit <= 6) {
+            sendMail(user.email, 'Credit Refill Alert', `You have ${user.credit} credits left. Please consider refilling your account.`);
         }
 
         const post = await prisma.post.create({
             data: {
-                content,
+                content: mediaUrl || content,
                 description: description || '',
                 author: { connect: { id: userId } },
                 tag: {
@@ -77,12 +100,10 @@ export const createPost = async (req: Request, res: Response) => {
             },
         });
 
-        user.credit -= 2;
-        await prisma.user.update({ where: { id: userId }, data: { credit: user.credit } });
-
-        if (user.credit <= 6) {
-            sendMail(user.email, 'Alerte rechargement de crédit', `Il vous reste ${user.credit} credit. Pensez à recharger votre compte!!!.`);
-        }
+                    connect: validTags,
+                },
+            },
+        });
 
         return res.status(201).json({ message: 'Post created successfully', post });
 
@@ -94,7 +115,6 @@ export const createPost = async (req: Request, res: Response) => {
         });
     }
 };
-
 
 
 export const updatePost = async(req:Request, res:Response) => {

@@ -108,7 +108,7 @@ model Post {
 }
 model Tag {
   id       Int       @id @default(autoincrement())
-  name     String @unique
+  name     String    @unique
   articles Article[]
   posts     Post[]
 
