@@ -13,7 +13,6 @@ export const createPost = async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'User not found!' });
         }
 
-        // Fetch user with roles
         const user = await prisma.user.findUnique({
             where: { id: userId },
             include: {
@@ -25,17 +24,18 @@ export const createPost = async (req: Request, res: Response) => {
             return res.status(401).json({ message: `User with ID ${userId} not found!` });
         }
 
-        // Check if user has the 'TAILOR' role
         if (!user.roles.some(r => r.name === 'TAILOR')) {
             return res.status(401).json({ message: 'You are not authorized to create a post' });
         }
 
-        // Check user credit
         if (user.credit === 0) {
             return res.status(400).json({ message: 'You are out of credit. Please refill your credit.' });
         }
 
-        // Handle media upload if file is present
+        if (!file && !content) {
+            return res.status(400).json({ message: 'Either file or text content is required.' });
+        }
+
         let mediaUrl: string | undefined;
         if (file) {
             const media = await new Promise((resolve, reject) => {
@@ -51,11 +51,6 @@ export const createPost = async (req: Request, res: Response) => {
             mediaUrl = (media as any).secure_url;
         }
 
-        if (!content) {
-            return res.status(400).json({ message: 'Content is required.' });
-        }
-
-        // Validate tags
         const validTags: { id: number }[] = [];
         if (tags && tags.length > 0) {
             for (const tagName of tags) {
@@ -68,18 +63,14 @@ export const createPost = async (req: Request, res: Response) => {
                 validTags.push({ id: tag.id });
             }
         }
-        
 
-        // Deduct credit from user
         user.credit -= 2;
         await prisma.user.update({ where: { id: userId }, data: { credit: user.credit } });
 
         if (user.credit <= 6) {
-            // Send alert for low credit
             sendMail(user.email, 'Credit Refill Alert', `You have ${user.credit} credits left. Please consider refilling your account.`);
         }
 
-        // Create post
         const post = await prisma.post.create({
             data: {
                 content: mediaUrl || content,
