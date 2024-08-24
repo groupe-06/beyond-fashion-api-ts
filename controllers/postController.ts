@@ -30,10 +30,10 @@ export const createPost = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'You are out of credit. Please refill your credit.' });
         }
 
-        if (!content) {
+       /*  if (!content) {
             return res.status(400).json({ message: 'Content is required.' });
         }
-
+ */
         if (!file && !content) {
             return res.status(400).json({ message: 'Either file or text content is required.' });
         }

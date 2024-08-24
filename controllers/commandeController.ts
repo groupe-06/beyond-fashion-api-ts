@@ -1,6 +1,10 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import sendSms from '../utils/sendSms'
+import { generatePDFReceipt } from '../utils/utils'
+import path from 'path';
+import fs from 'fs';
+
 const prisma = new PrismaClient();
 
 
@@ -29,90 +33,81 @@ export const createCommande = async (req: Request, res: Response) => {
             return res.status(403).json({ message: 'Only users with the TAILOR role can place an order.' });
         }
 
-        // Calcul du prix total et traitement de la commande
-        let totalPrice = 0;
+        // Recherche d'une commande "pending" pour cet utilisateur
+        let existingCommande = await prisma.commande.findFirst({
+            where: {
+                userId: userId,
+                etat: 'PENDING' // Vérifier uniquement les commandes en attente
+            },
+            include: { commandeArticles: true }
+        });
 
-        const commande = await prisma.$transaction(async (prisma) => {
-
-            // Recherche d'une commande existante pour cet utilisateur
-            let existingCommande = await prisma.commande.findFirst({
-                where: {
-                    userId: userId
+        if (!existingCommande) {
+            // Si aucune commande en attente, créer une nouvelle commande
+            existingCommande = await prisma.commande.create({
+                data: {
+                    userId: userId,
+                    totalPrice: 0,
+                    etat: 'PENDING',
+                    commandeArticles: {
+                        create: []
+                    }
                 },
                 include: { commandeArticles: true }
             });
+        }
 
-            if (!existingCommande) {
-                // Création d'une nouvelle commande si elle n'existe pas encore
-                existingCommande = await prisma.commande.create({
-                    data: {
-                        userId: userId,
-                        totalPrice: 0,
-                        commandeArticles: {
-                            create: []
-                        }
-                    },
-                    include: { commandeArticles: true }
-                });
-            }
+        let totalPrice = existingCommande.commandeArticles.reduce((sum, item) => sum + item.quantity * item.prixUnitaire, 0);
 
-            // Initialisation du prix total avec le total des articles existants
-            totalPrice = existingCommande.commandeArticles.reduce((sum, item) => sum + item.quantity * item.prixUnitaire, 0);
-
-            for (const item of articles) {
-                const article = await prisma.article.findUnique({
-                    where: { id: item.articleId }
-                });
-
-                if (!article) {
-                    throw new Error(`Article with id ${item.articleId} not found`);
-                }
-
-                if (item.quantity > article.stockQuantity) {
-                    throw new Error(`Quantity for article ${article.name} exceeds stock`);
-                }
-
-                const existingArticleInCommande = existingCommande.commandeArticles.find(ca => ca.articleId === item.articleId);
-
-                if (existingArticleInCommande) {
-                    // Mise à jour de la quantité de l'article existant dans la commande
-                    const newQuantity = existingArticleInCommande.quantity + item.quantity;
-                    if (newQuantity > article.stockQuantity) {
-                        throw new Error(`Total quantity for article ${article.name} exceeds stock`);
-                    }
-
-                    await prisma.commandeArticle.update({
-                        where: { id: existingArticleInCommande.id },
-                        data: { quantity: newQuantity, prixUnitaire: article.unitPrice }
-                    });
-                } else {
-                    // Ajout d'un nouvel article à la commande existante
-                    await prisma.commandeArticle.create({
-                        data: {
-                            articleId: item.articleId,
-                            commandeId: existingCommande.id,
-                            quantity: item.quantity,
-                            prixUnitaire: article.unitPrice
-                        }
-                    });
-                }
-
-                // Mise à jour du prix total avec le nouvel article ajouté ou mis à jour
-                totalPrice += item.quantity * article.unitPrice;
-            }
-
-            // Mise à jour du prix total de la commande
-            await prisma.commande.update({
-                where: { id: existingCommande.id },
-                data: { totalPrice: totalPrice }
+        for (const item of articles) {
+            const article = await prisma.article.findUnique({
+                where: { id: item.articleId }
             });
 
-            return existingCommande;
+            if (!article) {
+                throw new Error(`Article with id ${item.articleId} not found`);
+            }
+
+            if (item.quantity > article.stockQuantity) {
+                throw new Error(`Quantity for article ${article.name} exceeds stock`);
+            }
+
+            const existingArticleInCommande = existingCommande.commandeArticles.find(ca => ca.articleId === item.articleId);
+
+            if (existingArticleInCommande) {
+                // Mise à jour de la quantité de l'article existant
+                const newQuantity = existingArticleInCommande.quantity + item.quantity;
+                if (newQuantity > article.stockQuantity) {
+                    throw new Error(`Total quantity for article ${article.name} exceeds stock`);
+                }
+
+                await prisma.commandeArticle.update({
+                    where: { id: existingArticleInCommande.id },
+                    data: { quantity: newQuantity, prixUnitaire: article.unitPrice }
+                });
+            } else {
+                // Ajouter un nouvel article à la commande existante
+                await prisma.commandeArticle.create({
+                    data: {
+                        articleId: item.articleId,
+                        commandeId: existingCommande.id,
+                        quantity: item.quantity,
+                        prixUnitaire: article.unitPrice
+                    }
+                });
+            }
+
+            totalPrice += item.quantity * article.unitPrice;
+        }
+
+        // Mise à jour du prix total de la commande
+        await prisma.commande.update({
+            where: { id: existingCommande.id },
+            data: { totalPrice: totalPrice }
         });
 
-        // Réponse avec les détails de la commande et de ses articles
         const updatedCommande = await prisma.commande.findUnique({
-            where: { id: commande.id },
+            where: { id: existingCommande.id },
             include: { commandeArticles: true }
         });
 
@@ -191,14 +186,14 @@ export const deleteCommandeArticle = async (req: Request, res: Response) => {
 
 export const completePurchase = async (req: Request, res: Response) => {
     const { commandeId } = req.body;
-    const userId = (req as any).userId; // Assume this is set by authentication middleware
+    const userId = (req as any).userId;
 
     if (!commandeId) {
         return res.status(400).json({ message: 'Commande ID is required.' });
     }
 
     try {
-        // Récupérer la commande avec ses articles et vérifier l'utilisateur associé
+        // Récupérer la commande avec ses articles
         const commande = await prisma.commande.findUnique({
             where: { id: commandeId },
             include: { commandeArticles: true }
@@ -208,38 +203,29 @@ export const completePurchase = async (req: Request, res: Response) => {
             return res.status(404).json({ message: 'Commande not found.' });
         }
 
-        // Vérifier si l'utilisateur connecté est bien celui qui a passé la commande
         if (commande.userId !== userId) {
             return res.status(403).json({ message: 'Unauthorized to complete this purchase.' });
         }
 
-        // Calculer le total de la commande
         const totalPrice = commande.commandeArticles.reduce((sum, item) => sum + item.quantity * item.prixUnitaire, 0);
 
-        // Supprimer la commande et les articles associés
-        await prisma.$transaction(async (prisma) => {
-            // Supprimer les articles de la commande
-            await prisma.commandeArticle.deleteMany({
-                where: { commandeId: commandeId }
-            });
-
-            // Supprimer la commande
-            await prisma.commande.delete({
-                where: { id: commandeId }
-            });
-
-            // Mettre à jour les quantités des articles (décrémenter le stock)
-            for (const item of commande.commandeArticles) {
-                await prisma.article.update({
-                    where: { id: item.articleId },
-                    data: {
-                        stockQuantity: {
-                            decrement: item.quantity
-                        }
-                    }
-                });
-            }
+        // Mettre à jour l'état de la commande en CONFIRMED
+        await prisma.commande.update({
+            where: { id: commandeId },
+            data: { etat: 'CONFIRMED' }
         });
+
+        // Mettre à jour les quantités des articles (décrémenter le stock)
+        for (const item of commande.commandeArticles) {
+            await prisma.article.update({
+                where: { id: item.articleId },
+                data: {
+                    stockQuantity: {
+                        decrement: item.quantity
+                    }
+                }
+            });
+        }
 
         // Envoyer un SMS au client
         const user = await prisma.user.findUnique({
@@ -252,7 +238,7 @@ export const completePurchase = async (req: Request, res: Response) => {
             await sendSms(user.phoneNumber, message);
         }
 
-        res.status(200).json({ message: 'Purchase completed and command deleted successfully.' });
+        res.status(200).json({ message: 'Purchase completed successfully.' });
     } catch (error: unknown) {
         console.error(error);
 
@@ -263,3 +249,107 @@ export const completePurchase = async (req: Request, res: Response) => {
         }
     }
 };
+export const markCommandeAsRecupere = async (req: Request, res: Response) => {
+    const { commandeId } = req.body;
+    const userId =(req as any).userId; // Assuming req.user contains the logged-in user's information
+  
+    try {
+      // Récupérer la commande
+      const commande = await prisma.commande.findUnique({
+        where: { id: commandeId }
+      });
+  
+      if (!commande) {
+        return res.status(404).json({ message: 'Commande non trouvée.' });
+      }
+  
+      // Vérifier que l'auteur de la commande est bien celui qui tente de la confirmer
+      if (commande.userId !== userId) {
+        return res.status(403).json({ message: 'Vous n\'êtes pas autorisé à confirmer cette commande.' });
+      }
+  
+      // Mise à jour de l'état de la commande
+      const updatedCommande = await prisma.commande.update({
+        where: { id: commandeId },
+        data: { etat: 'TAKED' }
+      });
+  
+      // Génération du reçu PDF
+      const receiptPath = await generatePDFReceipt(updatedCommande);
+  
+      // Option 1: Envoyer le fichier directement
+      res.download(receiptPath, `receipt_${commandeId}.pdf`, (err) => {
+        if (err) {
+          console.error('Erreur lors de l\'envoi du fichier:', err);
+          res.status(500).json({ error: 'Erreur lors de l\'envoi du fichier PDF' });
+        }
+      });
+  
+      // Option 2: Envoyer un lien de téléchargement
+      // const receiptUrl = `${req.protocol}://${req.get('host')}/receipts/receipt_${commandeId}.pdf`;
+      // res.json({ message: 'Commande récupérée avec succès', receiptUrl });
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la commande:', error);
+      res.status(500).json({ error: 'Erreur lors de la mise à jour de la commande' });
+    }
+  };
+  export const cancelCommande = async (req: Request, res: Response) => {
+    const { commandeId } = req.body;
+    const userId = (req as any).userId; // Assuming req.user contains the logged-in user's information
+  
+    try {
+      await prisma.$transaction(async (prisma) => {
+        // Récupérer la commande avec ses articles
+        const commande = await prisma.commande.findUnique({
+          where: { id: commandeId },
+          include: { commandeArticles: true }
+        });
+  
+        if (!commande) {
+          throw new Error('Commande non trouvée.');
+        }
+  
+        // Vérifier que l'auteur de la commande est bien celui qui tente de l'annuler
+        if (commande.userId !== userId) {
+          throw new Error('Vous n\'êtes pas autorisé à annuler cette commande.');
+        }
+  
+        if (commande.etat !== 'CONFIRMED') {
+          throw new Error('Seules les commandes confirmées peuvent être annulées.');
+        }
+  
+        // Rétablir les quantités de stock pour chaque article
+        for (const item of commande.commandeArticles) {
+          await prisma.article.update({
+            where: { id: item.articleId },
+            data: {
+              stockQuantity: {
+                increment: item.quantity
+              }
+            }
+          });
+        }
+  
+        // Supprimer les articles associés à la commande
+        await prisma.commandeArticle.deleteMany({
+          where: { commandeId: commandeId }
+        });
+  
+        // Supprimer la commande
+        await prisma.commande.delete({
+          where: { id: commandeId }
+        });
+      });
+  
+      res.status(200).json({ message: 'Commande annulée et supprimée avec succès.' });
+    } catch (error) {
+      console.error(error);
+  
+      if (error instanceof Error) {
+        res.status(500).json({ message: 'Une erreur est survenue lors de l\'annulation de la commande.', error: error.message });
+      } else {
+        res.status(500).json({ message: 'Une erreur inconnue est survenue.' });
+      }
+    }
+  };
+  
