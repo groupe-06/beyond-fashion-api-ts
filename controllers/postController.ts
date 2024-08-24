@@ -30,9 +30,6 @@ export const createPost = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'You are out of credit. Please refill your credit.' });
         }
 
-        if (!content) {
-            return res.status(400).json({ message: 'Content is required.' });
-        }
 
         if (!file && !content) {
             return res.status(400).json({ message: 'Either file or text content is required.' });
@@ -52,6 +49,7 @@ export const createPost = async (req: Request, res: Response) => {
             });
             mediaUrl = (media as any).secure_url;
         }
+
 
         // Ensure tags is an array
         let parsedTags = tags;
