@@ -1,10 +1,9 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import sendSms from '../utils/sendSms'
-import { generatePDFReceipt } from '../utils/utils'
+import { generatePDFReceipt,sendMail } from '../utils/utils'
 import path from 'path';
 import fs from 'fs';
-
 const prisma = new PrismaClient();
 
 
@@ -207,7 +206,17 @@ export const completePurchase = async (req: Request, res: Response) => {
             return res.status(403).json({ message: 'Unauthorized to complete this purchase.' });
         }
 
+        // Vérifier si l'état de la commande est PENDING
+        if (commande.etat !== 'PENDING') {
+            return res.status(400).json({ message: 'Only pending orders can be completed.' });
+        }
+
         const totalPrice = commande.commandeArticles.reduce((sum, item) => sum + item.quantity * item.prixUnitaire, 0);
+
+        // Vérifier si le totalPrice est supérieur à 0
+        if (totalPrice <= 0) {
+            return res.status(400).json({ message: 'Total price must be greater than 0 to complete the purchase.' });
+        }
 
         // Mettre à jour l'état de la commande en CONFIRMED
         await prisma.commande.update({
@@ -249,50 +258,73 @@ export const completePurchase = async (req: Request, res: Response) => {
         }
     }
 };
+
 export const markCommandeAsRecupere = async (req: Request, res: Response) => {
     const { commandeId } = req.body;
-    const userId =(req as any).userId; // Assuming req.user contains the logged-in user's information
-  
+    const userId = (req as any).userId;
+
     try {
-      // Récupérer la commande
-      const commande = await prisma.commande.findUnique({
-        where: { id: commandeId }
-      });
-  
-      if (!commande) {
-        return res.status(404).json({ message: 'Commande non trouvée.' });
-      }
-  
-      // Vérifier que l'auteur de la commande est bien celui qui tente de la confirmer
-      if (commande.userId !== userId) {
-        return res.status(403).json({ message: 'Vous n\'êtes pas autorisé à confirmer cette commande.' });
-      }
-  
-      // Mise à jour de l'état de la commande
-      const updatedCommande = await prisma.commande.update({
-        where: { id: commandeId },
-        data: { etat: 'TAKED' }
-      });
-  
-      // Génération du reçu PDF
-      const receiptPath = await generatePDFReceipt(updatedCommande);
-  
-      // Option 1: Envoyer le fichier directement
-      res.download(receiptPath, `receipt_${commandeId}.pdf`, (err) => {
-        if (err) {
-          console.error('Erreur lors de l\'envoi du fichier:', err);
-          res.status(500).json({ error: 'Erreur lors de l\'envoi du fichier PDF' });
+        // Récupérer la commande
+        const commande = await prisma.commande.findUnique({
+            where: { id: commandeId },
+            include: { user: true } // Include user details to access phone number and email
+        });
+
+        if (!commande) {
+            return res.status(404).json({ message: 'Commande non trouvée.' });
         }
-      });
-  
-      // Option 2: Envoyer un lien de téléchargement
-      // const receiptUrl = `${req.protocol}://${req.get('host')}/receipts/receipt_${commandeId}.pdf`;
-      // res.json({ message: 'Commande récupérée avec succès', receiptUrl });
+
+        // Vérifier que l'auteur de la commande est bien celui qui tente de la confirmer
+        if (commande.userId !== userId) {
+            return res.status(403).json({ message: 'Vous n\'êtes pas autorisé à confirmer cette commande.' });
+        }
+
+        // Vérifier que l'état de la commande est CONFIRMED
+        if (commande.etat !== 'CONFIRMED') {
+            return res.status(400).json({ message: 'La commande doit être confirmée avant d\'être récupérée.' });
+        }
+
+        // Mise à jour de l'état de la commande à TAKED
+        const updatedCommande = await prisma.commande.update({
+            where: { id: commandeId },
+            data: { etat: 'TAKED' }
+        });
+
+        // Génération du reçu PDF
+        const receiptPath = await generatePDFReceipt(updatedCommande);
+
+        // Envoyer le reçu par email au client
+        if (commande.user?.email) {
+            const subject = 'Votre commande a été récupérée avec succès';
+            const message = `Cher client, votre commande (ID: ${commandeId}) a été récupérée avec succès. Le reçu est joint en pièce jointe. Merci de votre confiance en Beyound Fashion.`;
+            console.log(commande.user);
+        
+            
+            await sendMail(commande.user.email, subject, message, receiptPath);
+        }
+
+        // Envoyer un SMS au client pour confirmer la récupération
+        if (commande.user?.phoneNumber) {
+            const smsMessage = `Votre commande a été récupérée avec succès. Beyound Fashion vous remercie de votre confiance.`;
+            await sendSms(commande.user.phoneNumber, smsMessage);
+        }
+
+        // Envoyer le fichier PDF en réponse (Option 1)
+        res.download(receiptPath, `receipt_${commandeId}.pdf`, (err) => {
+            if (err) {
+                console.error('Erreur lors de l\'envoi du fichier:', err);
+                res.status(500).json({ error: 'Erreur lors de l\'envoi du fichier PDF' });
+            }
+        });
+
+        // Option 2: Envoyer un lien de téléchargement
+        // const receiptUrl = `${req.protocol}://${req.get('host')}/receipts/receipt_${commandeId}.pdf`;
+        // res.json({ message: 'Commande récupérée avec succès', receiptUrl });
     } catch (error) {
-      console.error('Erreur lors de la mise à jour de la commande:', error);
-      res.status(500).json({ error: 'Erreur lors de la mise à jour de la commande' });
+        console.error('Erreur lors de la mise à jour de la commande:', error);
+        res.status(500).json({ error: 'Erreur lors de la mise à jour de la commande' });
     }
-  };
+};
   export const cancelCommande = async (req: Request, res: Response) => {
     const { commandeId } = req.body;
     const userId = (req as any).userId; // Assuming req.user contains the logged-in user's information

@@ -5,6 +5,8 @@ import nodemailer from 'nodemailer';
 import PDFDocument from 'pdfkit';
 import path from 'path';
 import fs from 'fs';
+import axios from 'axios'
+
 export const cryptPassword = (password: string ) => {
     const salt = bcrypt.genSaltSync(10);
     return bcrypt.hashSync(password, salt);
@@ -19,25 +21,39 @@ export const generateToken = async (user: any) => {
     return token;
 };
 
-export const sendMail = async (to: string, subject: string, message: string) => {
-    const transporter = nodemailer.createTransport({
-      service: 'Gmail',
-      auth: {
-        user: process.env.EMAIL_GOOGLE_APP,
-        pass: process.env.PASSWORD_GOOGLE_APP
+export const sendMail = async (to: string, subject: string, message: string, attachmentPath?: string) => {
+  const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+      user: process.env.EMAIL_GOOGLE_APP,
+      pass: process.env.PASSWORD_GOOGLE_APP
+    }
+  });
+
+  const mailOptions: any = {
+    from: process.env.EMAIL_GOOGLE_APP,
+    to: to,
+    subject: subject,
+    text: message
+  };
+
+  // Ajouter la pièce jointe si elle est fournie
+  if (attachmentPath) {
+    mailOptions.attachments = [
+      {
+        path: attachmentPath
       }
-    });
-
-    const mailOptions = {
-      from: process.env.EMAIL_GOOGLE_APP,
-      to: to,
-      subject: subject,
-      text: message
-    };
-
-    return transporter.sendMail(mailOptions);
+    ];
   }
 
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email envoyé avec succès:", info);
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de l'email:", error);
+    throw error; // Relancer l'erreur pour la gestion côté appelant
+  }
+};
   export const generatePDFReceipt = async (commande: any) => {
     return new Promise<string>((resolve, reject) => {
       const doc = new PDFDocument();
