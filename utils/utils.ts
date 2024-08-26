@@ -72,7 +72,7 @@ export const sendMail = async (to: string, subject: string, message: string, att
       const writeStream = fs.createWriteStream(filePath);
   
       // Ajouter les informations de la commande dans le PDF
-      doc.fontSize(20).text(`Reçu de Commande`);
+      doc.fontSize(20).text("Reçu de Commande");
       doc.text(`Commande ID: ${commande.id}`);
       doc.text(`Total: ${commande.totalPrice} €`);
       doc.text(`État: ${commande.etat}`);

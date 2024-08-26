@@ -12,11 +12,15 @@ export const createCommande = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
     const { articles } = req.body;
 
-    if (!articles || !Array.isArray(articles) || articles.length === 0) {
-        return res.status(400).json({ message: 'Invalid request data.' });
-    }
-
     try {
+        if (!userId) {
+            return res.status(401).json({ message: 'userId from token not found' });
+        }
+
+        if (!articles || !Array.isArray(articles) || articles.length === 0) {
+            return res.status(400).json({ message: 'Invalid request data.' });
+        }
+
         // Vérification du rôle "TAILOR"
         const user = await prisma.user.findUnique({
             where: { id: userId },
@@ -32,35 +36,34 @@ export const createCommande = async (req: Request, res: Response) => {
             return res.status(403).json({ message: 'Only users with the TAILOR role can place an order.' });
         }
 
-        // Recherche d'une commande "pending" pour cet utilisateur
-        let existingCommande = await prisma.commande.findFirst({
-            where: {
-                userId: userId,
-                etat: 'PENDING' // Vérifier uniquement les commandes en attente
+        const command = await prisma.commande.create({
+            data: {
+                userId,
+                commandeArticles: {
+                    create: [],
+                },
             },
-            include: { commandeArticles: true }
+            include: {
+                commandeArticles: true,
+            },
         });
 
-        if (!existingCommande) {
-            // Si aucune commande en attente, créer une nouvelle commande
-            existingCommande = await prisma.commande.create({
-                data: {
-                    userId: userId,
-                    totalPrice: 0,
-                    etat: 'PENDING',
-                    commandeArticles: {
-                        create: []
-                    }
-                },
-                include: { commandeArticles: true }
-            });
-        }
-
-        let totalPrice = existingCommande.commandeArticles.reduce((sum, item) => sum + item.quantity * item.prixUnitaire, 0);
+        let totalPrice = 0;
 
         for (const item of articles) {
             const article = await prisma.article.findUnique({
-                where: { id: item.articleId }
+                where: { id: item.articleId },
+                include: { 
+                    category: {
+                        select: {
+                            unit: {
+                                select: {
+                                    id: true
+                                }
+                            }
+                        }
+                    }
+                }
             });
 
             if (!article) {
@@ -71,14 +74,24 @@ export const createCommande = async (req: Request, res: Response) => {
                 throw new Error(`Quantity for article ${article.name} exceeds stock`);
             }
 
-            const existingArticleInCommande = existingCommande.commandeArticles.find(ca => ca.articleId === item.articleId);
+            const conversion = await prisma.conversion.findFirst({
+                where: {
+                    fromUnitId: item.unitId,
+                    toUnitId: article.category.unit.id,
+                },
+            });
+
+            const convertedQuantity = conversion ? item.quantity * conversion.value : item.quantity;
+
+            if (convertedQuantity > article.stockQuantity) {
+                throw new Error(`Total quantity for article ${article.name} exceeds stock`);
+            }
+
+            const existingArticleInCommande = command.commandeArticles.find(ca => ca.articleId === item.articleId);
 
             if (existingArticleInCommande) {
                 // Mise à jour de la quantité de l'article existant
-                const newQuantity = existingArticleInCommande.quantity + item.quantity;
-                if (newQuantity > article.stockQuantity) {
-                    throw new Error(`Total quantity for article ${article.name} exceeds stock`);
-                }
+                const newQuantity = existingArticleInCommande.quantity + convertedQuantity;
 
                 await prisma.commandeArticle.update({
                     where: { id: existingArticleInCommande.id },
@@ -89,36 +102,27 @@ export const createCommande = async (req: Request, res: Response) => {
                 await prisma.commandeArticle.create({
                     data: {
                         articleId: item.articleId,
-                        commandeId: existingCommande.id,
-                        quantity: item.quantity,
-                        prixUnitaire: article.unitPrice
-                    }
+                        commandeId: command.id,
+                        quantity: convertedQuantity,
+                        prixUnitaire: article.unitPrice,
+                        unitId: item.unitId,
+                    },
                 });
             }
 
-            totalPrice += item.quantity * article.unitPrice;
+            totalPrice += convertedQuantity * article.unitPrice;
         }
 
         // Mise à jour du prix total de la commande
-        await prisma.commande.update({
-            where: { id: existingCommande.id },
-            data: { totalPrice: totalPrice }
+        const updatedCommande = await prisma.commande.update({
+            where: { id: command.id },
+            data: { totalPrice },
+            include: {
+                commandeArticles: true,
+            },
         });
 
-        const updatedCommande = await prisma.commande.findUnique({
-            where: { id: existingCommande.id },
-            include: { commandeArticles: true }
-        });
-
-        res.status(201).json({
-            commandeId: updatedCommande?.id,
-            totalPrice: updatedCommande?.totalPrice,
-            articles: updatedCommande?.commandeArticles.map(article => ({
-                articleId: article.articleId,
-                quantity: article.quantity,
-                prixUnitaire: article.prixUnitaire
-            }))
-        });
+        res.status(201).json({ updatedCommande });
     } catch (error) {
         if (error instanceof Error) {
             console.error(error.message);
@@ -129,6 +133,7 @@ export const createCommande = async (req: Request, res: Response) => {
         }
     }
 };
+
 
 
 // Function to handle deletion of an article from a commande and update the total price
@@ -317,15 +322,14 @@ export const markCommandeAsRecupere = async (req: Request, res: Response) => {
             }
         });
 
-        // Option 2: Envoyer un lien de téléchargement
-        // const receiptUrl = `${req.protocol}://${req.get('host')}/receipts/receipt_${commandeId}.pdf`;
-        // res.json({ message: 'Commande récupérée avec succès', receiptUrl });
     } catch (error) {
         console.error('Erreur lors de la mise à jour de la commande:', error);
         res.status(500).json({ error: 'Erreur lors de la mise à jour de la commande' });
     }
 };
-  export const cancelCommande = async (req: Request, res: Response) => {
+
+
+export const cancelCommande = async (req: Request, res: Response) => {
     const { commandeId } = req.body;
     const userId = (req as any).userId; // Assuming req.user contains the logged-in user's information
   
@@ -384,4 +388,3 @@ export const markCommandeAsRecupere = async (req: Request, res: Response) => {
       }
     }
   };
-  

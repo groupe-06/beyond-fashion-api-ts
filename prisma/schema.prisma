@@ -47,7 +47,7 @@ model User {
   blocks             Block[]             @relation("UserBlocks")
   blockedBy          Block[]             @relation("BlockedUsers")
   articleByUser      Article[]
-  commandeByUser Commande[] 
+  commandeByUser     Commande[]
 
   @@map("user")
 }
@@ -102,50 +102,67 @@ model Post {
   postDislikes PostDislike[]
   reports      Report[]
   favorites    Favorite[]
-  tag     Tag[]
+  tag          Tag[]
 
   @@map("post")
 }
+
 model Tag {
   id       Int       @id @default(autoincrement())
   name     String    @unique
   articles Article[]
-  posts     Post[]
+  posts    Post[]
 
   @@map("tag")
 }
+
 model Article {
-  id            Int      @id @default(autoincrement())
-  name          String
-  stockQuantity Int
-  unitPrice     Float
-  photo         String
-  color      String?
-  userId        Int 
-  user          User     @relation(fields: [userId], references: [id])
-  categoryId    Int
-  category      Category @relation(fields: [categoryId], references: [id])
-  tags          Tag[]
+  id               Int               @id @default(autoincrement())
+  name             String
+  stockQuantity    Int
+  unitPrice        Float
+  photo            String
+  color            String?
+  userId           Int
+  user             User              @relation(fields: [userId], references: [id])
+  categoryId       Int
+  category         Category          @relation(fields: [categoryId], references: [id])
+  tags             Tag[]
   commandeArticles CommandeArticle[]
 
   @@map("article")
 }
+
 model Category {
   id       Int       @id @default(autoincrement())
   name     String
   image    String
- unitId   Int
-  Unit     Unit @relation(fields: [unitId ], references: [id])
+  unitId   Int
+  unit     Unit      @relation(fields: [unitId], references: [id])
   articles Article[]
 
   @@map("category")
 }
+
 model Unit {
   id         Int        @id @default(autoincrement())
   name       String
   categories Category[]
+  conversionFromUnits Conversion[] @relation("ConversionFromUnits")
+  conversiontoUnits   Conversion[] @relation("ConversiontoUnits")
 
   @@map("unit")
+}
+
+model Conversion {
+  id         Int   @id @default(autoincrement())
+  value      Float
+  fromUnitId Int // unité de départ
+  fromUnit   Unit  @relation("ConversionFromUnits", fields: [fromUnitId], references: [id])
+  toUnitId   Int // unité d'arrivée
+  toUnit     Unit  @relation("ConversiontoUnits", fields: [toUnitId], references: [id])
+
+  @@map("conversion")
 }
 
 model Rate {
@@ -299,12 +316,13 @@ model FemaleMeasurement {
 }
 
 model Commande {
-  id              Int              @id @default(autoincrement())
-  userId          Int
-  totalPrice      Float            @default(0)
-  etat            CommandeEtat     @default(PENDING) // Ajout de l'état
+  id               Int               @id @default(autoincrement())
+  userId           Int
+  user             User              @relation(fields: [userId], references: [id])
+  totalPrice       Float             @default(0)
+  etat             CommandeEtat      @default(PENDING) // Ajout de l'état
   commandeArticles CommandeArticle[]
-  user            User             @relation(fields: [userId], references: [id])
+  date             DateTime          @default(now())
 
   @@map("commande")
 }
@@ -317,13 +335,14 @@ enum CommandeEtat {
 }
 
 model CommandeArticle {
-  id             Int           @id @default(autoincrement())
-  commandeId     Int
-  commande       Commande      @relation(fields: [commandeId], references: [id])
-  articleId      Int
-  article        Article       @relation(fields: [articleId], references: [id])
-  quantity       Int
-  prixUnitaire   Float
-  
+  id           Int      @id @default(autoincrement())
+  commandeId   Int
+  commande     Commande @relation(fields: [commandeId], references: [id])
+  articleId    Int
+  article      Article  @relation(fields: [articleId], references: [id])
+  quantity     Int
+  prixUnitaire Float
+  unitId       Int
+
   @@map("commande_article")
 }
