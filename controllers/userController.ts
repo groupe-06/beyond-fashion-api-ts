@@ -268,7 +268,7 @@ export const blockUser = async (req: Request, res: Response) => {
 
 export const unblockUser = async (req: Request, res: Response) => {
     const blockerId = (req as any).userId;
-    const blockedId = parseInt(req.params.blockedId);
+    const blockedId = parseInt(req.params.deblockedId);
 
     try {
         if (!blockerId) {
