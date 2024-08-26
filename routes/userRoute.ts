@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createUser, getAllUsers, getUserById, deleteUser, updateUser, login, updateProfile, blockUser } from '../controllers/userController';
+import { createUser, getAllUsers, getUserById, deleteUser, updateUser, login, updateProfile, blockUser, unblockUser } from '../controllers/userController';
 import { getToken } from '../middlewares/authMiddlewares';
 import { validateUserRequest } from '../middlewares/shemaValidator';
 import { createCommande,deleteCommandeArticle,completePurchase} from '../controllers/commandeController';
@@ -17,5 +17,7 @@ router.delete('/delete/:id', deleteUser);
 router.post('/login', login);
 router.put('/update-profile', getToken, updateProfile);
 router.post('/block/:blockedId',getToken, blockUser);
+router.post('/unblock/:deblockedId',getToken, unblockUser);
+
 
 export default router;
