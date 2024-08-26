@@ -1,174 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the `Block` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Comment` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Dislike` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Favorite` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Like` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Measure` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Message` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Notification` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Post` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Rate` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Recharge` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Report` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Role` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Share` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Statue` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `User` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `UserFollow` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `_PostShares` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `_RecipientShares` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE `Block` DROP FOREIGN KEY `Block_blockedId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Block` DROP FOREIGN KEY `Block_blockerId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Comment` DROP FOREIGN KEY `Comment_authorId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Comment` DROP FOREIGN KEY `Comment_postId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Dislike` DROP FOREIGN KEY `Dislike_postId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Dislike` DROP FOREIGN KEY `Dislike_userId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Favorite` DROP FOREIGN KEY `Favorite_postId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Favorite` DROP FOREIGN KEY `Favorite_userId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Like` DROP FOREIGN KEY `Like_postId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Like` DROP FOREIGN KEY `Like_userId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Measure` DROP FOREIGN KEY `Measure_userId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Message` DROP FOREIGN KEY `Message_receiverId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Message` DROP FOREIGN KEY `Message_senderId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Notification` DROP FOREIGN KEY `Notification_receiverId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Post` DROP FOREIGN KEY `Post_authorId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Rate` DROP FOREIGN KEY `Rate_postId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Rate` DROP FOREIGN KEY `Rate_userId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Recharge` DROP FOREIGN KEY `Recharge_userId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Report` DROP FOREIGN KEY `Report_postId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Report` DROP FOREIGN KEY `Report_userId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Share` DROP FOREIGN KEY `Share_userId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `Statue` DROP FOREIGN KEY `Statue_authorId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `UserFollow` DROP FOREIGN KEY `UserFollow_followerId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `UserFollow` DROP FOREIGN KEY `UserFollow_followingId_fkey`;
-
--- DropForeignKey
-ALTER TABLE `_PostShares` DROP FOREIGN KEY `_PostShares_A_fkey`;
-
--- DropForeignKey
-ALTER TABLE `_PostShares` DROP FOREIGN KEY `_PostShares_B_fkey`;
-
--- DropForeignKey
-ALTER TABLE `_RecipientShares` DROP FOREIGN KEY `_RecipientShares_A_fkey`;
-
--- DropForeignKey
-ALTER TABLE `_RecipientShares` DROP FOREIGN KEY `_RecipientShares_B_fkey`;
-
--- DropForeignKey
-ALTER TABLE `_RoleToUser` DROP FOREIGN KEY `_RoleToUser_A_fkey`;
-
--- DropForeignKey
-ALTER TABLE `_RoleToUser` DROP FOREIGN KEY `_RoleToUser_B_fkey`;
-
--- DropTable
-DROP TABLE `Block`;
-
--- DropTable
-DROP TABLE `Comment`;
-
--- DropTable
-DROP TABLE `Dislike`;
-
--- DropTable
-DROP TABLE `Favorite`;
-
--- DropTable
-DROP TABLE `Like`;
-
--- DropTable
-DROP TABLE `Measure`;
-
--- DropTable
-DROP TABLE `Message`;
-
--- DropTable
-DROP TABLE `Notification`;
-
--- DropTable
-DROP TABLE `Post`;
-
--- DropTable
-DROP TABLE `Rate`;
-
--- DropTable
-DROP TABLE `Recharge`;
-
--- DropTable
-DROP TABLE `Report`;
-
--- DropTable
-DROP TABLE `Role`;
-
--- DropTable
-DROP TABLE `Share`;
-
--- DropTable
-DROP TABLE `Statue`;
-
--- DropTable
-DROP TABLE `User`;
-
--- DropTable
-DROP TABLE `UserFollow`;
-
--- DropTable
-DROP TABLE `_PostShares`;
-
--- DropTable
-DROP TABLE `_RecipientShares`;
-
 -- CreateTable
 CREATE TABLE `role` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
@@ -188,6 +17,7 @@ CREATE TABLE `user` (
     `address` VARCHAR(191) NULL,
     `phoneNumber` VARCHAR(191) NOT NULL,
     `gender` ENUM('MALE', 'FEMALE') NOT NULL,
+    `photoUrl` VARCHAR(191) NULL,
     `credit` INTEGER NOT NULL DEFAULT 0,
 
     UNIQUE INDEX `user_email_key`(`email`),
@@ -241,6 +71,57 @@ CREATE TABLE `post` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `tag` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `tag_name_key`(`name`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `article` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
+    `stockQuantity` INTEGER NOT NULL,
+    `unitPrice` DOUBLE NOT NULL,
+    `photo` VARCHAR(191) NOT NULL,
+    `color` VARCHAR(191) NULL,
+    `userId` INTEGER NOT NULL,
+    `categoryId` INTEGER NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `category` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
+    `image` VARCHAR(191) NOT NULL,
+    `unitId` INTEGER NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `unit` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `conversion` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `value` DOUBLE NOT NULL,
+    `fromUnitId` INTEGER NOT NULL,
+    `toUnitId` INTEGER NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `rate` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `stars` FLOAT NOT NULL,
@@ -258,6 +139,7 @@ CREATE TABLE `comment` (
     `content` VARCHAR(800) NOT NULL,
     `authorId` INTEGER NOT NULL,
     `postId` INTEGER NOT NULL,
+    `parentId` INTEGER NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -265,7 +147,7 @@ CREATE TABLE `comment` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `dislike` (
+CREATE TABLE `post_dislike` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `postId` INTEGER NOT NULL,
     `userId` INTEGER NOT NULL,
@@ -275,7 +157,7 @@ CREATE TABLE `dislike` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `like` (
+CREATE TABLE `post_like` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `postId` INTEGER NOT NULL,
     `userId` INTEGER NOT NULL,
@@ -321,8 +203,8 @@ CREATE TABLE `favorite` (
 CREATE TABLE `recharge` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userId` INTEGER NOT NULL,
-    `receiverId` INTEGER NOT NULL,
-    `code` INTEGER NOT NULL,
+    `receiverId` INTEGER NULL,
+    `code` BIGINT NOT NULL,
     `amount` DOUBLE NOT NULL,
     `isUsed` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -335,9 +217,10 @@ CREATE TABLE `recharge` (
 CREATE TABLE `story` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `content` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(200) NULL,
     `authorId` INTEGER NOT NULL,
     `publishedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    `expiresAt` DATETIME(3) NULL,
+    `expiresAt` DATETIME(3) NOT NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -346,7 +229,6 @@ CREATE TABLE `story` (
 CREATE TABLE `male_measurement` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userId` INTEGER NOT NULL,
-    `gender` ENUM('MALE', 'FEMALE') NOT NULL,
     `shoulder` DOUBLE NULL,
     `chest` DOUBLE NULL,
     `waist` DOUBLE NULL,
@@ -365,7 +247,6 @@ CREATE TABLE `male_measurement` (
 CREATE TABLE `female_measurement` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userId` INTEGER NOT NULL,
-    `gender` ENUM('MALE', 'FEMALE') NOT NULL,
     `shoulder` DOUBLE NULL,
     `chest` DOUBLE NULL,
     `waist` DOUBLE NULL,
@@ -375,6 +256,56 @@ CREATE TABLE `female_measurement` (
     `thigh` DOUBLE NULL,
 
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `commande` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL,
+    `totalPrice` DOUBLE NOT NULL DEFAULT 0,
+    `etat` ENUM('PENDING', 'CONFIRMED', 'CANCELED', 'TAKED') NOT NULL DEFAULT 'PENDING',
+    `date` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `commande_article` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `commandeId` INTEGER NOT NULL,
+    `articleId` INTEGER NOT NULL,
+    `quantity` INTEGER NOT NULL,
+    `prixUnitaire` DOUBLE NOT NULL,
+    `unitId` INTEGER NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `_RoleToUser` (
+    `A` INTEGER NOT NULL,
+    `B` INTEGER NOT NULL,
+
+    UNIQUE INDEX `_RoleToUser_AB_unique`(`A`, `B`),
+    INDEX `_RoleToUser_B_index`(`B`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `_PostToTag` (
+    `A` INTEGER NOT NULL,
+    `B` INTEGER NOT NULL,
+
+    UNIQUE INDEX `_PostToTag_AB_unique`(`A`, `B`),
+    INDEX `_PostToTag_B_index`(`B`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `_ArticleToTag` (
+    `A` INTEGER NOT NULL,
+    `B` INTEGER NOT NULL,
+
+    UNIQUE INDEX `_ArticleToTag_AB_unique`(`A`, `B`),
+    INDEX `_ArticleToTag_B_index`(`B`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
@@ -399,6 +330,21 @@ ALTER TABLE `user_follow` ADD CONSTRAINT `user_follow_followingId_fkey` FOREIGN 
 ALTER TABLE `post` ADD CONSTRAINT `post_authorId_fkey` FOREIGN KEY (`authorId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `article` ADD CONSTRAINT `article_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `article` ADD CONSTRAINT `article_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `category`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `category` ADD CONSTRAINT `category_unitId_fkey` FOREIGN KEY (`unitId`) REFERENCES `unit`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `conversion` ADD CONSTRAINT `conversion_fromUnitId_fkey` FOREIGN KEY (`fromUnitId`) REFERENCES `unit`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `conversion` ADD CONSTRAINT `conversion_toUnitId_fkey` FOREIGN KEY (`toUnitId`) REFERENCES `unit`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `rate` ADD CONSTRAINT `rate_postId_fkey` FOREIGN KEY (`postId`) REFERENCES `post`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -411,16 +357,19 @@ ALTER TABLE `comment` ADD CONSTRAINT `comment_authorId_fkey` FOREIGN KEY (`autho
 ALTER TABLE `comment` ADD CONSTRAINT `comment_postId_fkey` FOREIGN KEY (`postId`) REFERENCES `post`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `dislike` ADD CONSTRAINT `dislike_postId_fkey` FOREIGN KEY (`postId`) REFERENCES `post`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `comment` ADD CONSTRAINT `comment_parentId_fkey` FOREIGN KEY (`parentId`) REFERENCES `comment`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `dislike` ADD CONSTRAINT `dislike_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `post_dislike` ADD CONSTRAINT `post_dislike_postId_fkey` FOREIGN KEY (`postId`) REFERENCES `post`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `like` ADD CONSTRAINT `like_postId_fkey` FOREIGN KEY (`postId`) REFERENCES `post`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `post_dislike` ADD CONSTRAINT `post_dislike_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `like` ADD CONSTRAINT `like_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `post_like` ADD CONSTRAINT `post_like_postId_fkey` FOREIGN KEY (`postId`) REFERENCES `post`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `post_like` ADD CONSTRAINT `post_like_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `message` ADD CONSTRAINT `message_senderId_fkey` FOREIGN KEY (`senderId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -441,7 +390,7 @@ ALTER TABLE `favorite` ADD CONSTRAINT `favorite_postId_fkey` FOREIGN KEY (`postI
 ALTER TABLE `recharge` ADD CONSTRAINT `recharge_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `recharge` ADD CONSTRAINT `recharge_receiverId_fkey` FOREIGN KEY (`receiverId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `recharge` ADD CONSTRAINT `recharge_receiverId_fkey` FOREIGN KEY (`receiverId`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `story` ADD CONSTRAINT `story_authorId_fkey` FOREIGN KEY (`authorId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -453,7 +402,28 @@ ALTER TABLE `male_measurement` ADD CONSTRAINT `male_measurement_userId_fkey` FOR
 ALTER TABLE `female_measurement` ADD CONSTRAINT `female_measurement_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `commande` ADD CONSTRAINT `commande_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `commande_article` ADD CONSTRAINT `commande_article_commandeId_fkey` FOREIGN KEY (`commandeId`) REFERENCES `commande`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `commande_article` ADD CONSTRAINT `commande_article_articleId_fkey` FOREIGN KEY (`articleId`) REFERENCES `article`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `_RoleToUser` ADD CONSTRAINT `_RoleToUser_A_fkey` FOREIGN KEY (`A`) REFERENCES `role`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `_RoleToUser` ADD CONSTRAINT `_RoleToUser_B_fkey` FOREIGN KEY (`B`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_PostToTag` ADD CONSTRAINT `_PostToTag_A_fkey` FOREIGN KEY (`A`) REFERENCES `post`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_PostToTag` ADD CONSTRAINT `_PostToTag_B_fkey` FOREIGN KEY (`B`) REFERENCES `tag`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_ArticleToTag` ADD CONSTRAINT `_ArticleToTag_A_fkey` FOREIGN KEY (`A`) REFERENCES `article`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_ArticleToTag` ADD CONSTRAINT `_ArticleToTag_B_fkey` FOREIGN KEY (`B`) REFERENCES `tag`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
