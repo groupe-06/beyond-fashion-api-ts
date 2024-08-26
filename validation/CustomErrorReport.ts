@@ -9,7 +9,7 @@ export class CustomErrorReporter {
   hasErrors = false
 
   /**
-   * A collection of errors. Feel free to give accurate types
+   * A collection of  . Feel free to give accurate types
    * to this property
    */
   errors: any = {}

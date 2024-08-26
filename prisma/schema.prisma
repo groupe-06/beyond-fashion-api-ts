@@ -299,14 +299,21 @@ model FemaleMeasurement {
 }
 
 model Commande {
-  id             Int           @id @default(autoincrement())
-  userId         Int
-  user           User          @relation(fields: [userId], references: [id])
+  id              Int              @id @default(autoincrement())
+  userId          Int
+  totalPrice      Float            @default(0)
+  etat            CommandeEtat     @default(PENDING) // Ajout de l'état
   commandeArticles CommandeArticle[]
-  totalPrice     Float
-  date           DateTime      @default(now())
+  user            User             @relation(fields: [userId], references: [id])
 
   @@map("commande")
+}
+
+enum CommandeEtat {
+  PENDING
+  CONFIRMED
+  CANCELED
+  TAKED
 }
 
 model CommandeArticle {
@@ -320,4 +327,3 @@ model CommandeArticle {
   
   @@map("commande_article")
 }
-
