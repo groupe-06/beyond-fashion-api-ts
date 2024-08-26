@@ -322,15 +322,14 @@ export const markCommandeAsRecupere = async (req: Request, res: Response) => {
             }
         });
 
-        // Option 2: Envoyer un lien de téléchargement
-        // const receiptUrl = ${req.protocol}://${req.get('host')}/receipts/receipt_${commandeId}.pdf;
-        // res.json({ message: 'Commande récupérée avec succès', receiptUrl });
     } catch (error) {
         console.error('Erreur lors de la mise à jour de la commande:', error);
         res.status(500).json({ error: 'Erreur lors de la mise à jour de la commande' });
     }
 };
-  export const cancelCommande = async (req: Request, res: Response) => {
+
+
+export const cancelCommande = async (req: Request, res: Response) => {
     const { commandeId } = req.body;
     const userId = (req as any).userId; // Assuming req.user contains the logged-in user's information
   
