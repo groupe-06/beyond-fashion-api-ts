@@ -7,6 +7,9 @@ import path from 'path';
 import fs from 'fs';
 import axios from 'axios'
 
+const apiKey = process.env.INFOBIP_API_KEY;
+const baseUrl = process.env.INFOBIP_BASE_URL;
+
 export const cryptPassword = (password: string ) => {
     const salt = bcrypt.genSaltSync(10);
     return bcrypt.hashSync(password, salt);
@@ -54,6 +57,43 @@ export const sendMail = async (to: string, subject: string, message: string, att
     throw error; // Relancer l'erreur pour la gestion côté appelant
   }
 };
+
+
+export const sendSMS = async (phoneNumber: string, message: string) => {
+  try {
+      const response = await axios.post(`${baseUrl}/sms/2/text/advanced`, {
+          messages: [
+              {
+                  from: "Beyond_Fashion",
+                  destinations: [
+                      {
+                          to: phoneNumber
+                      }
+                  ],
+                  text: message
+              }
+          ]
+      }, {
+          headers: {
+              Authorization: `App ${apiKey}`,
+              'Content-Type': 'application/json'
+          }
+      });
+
+      console.log('SMS sent successfully:', response.data);
+      console.log('Sending SMS with the following details:');
+console.log(`Phone Number: ${phoneNumber}`);
+console.log(`Message: ${message}`);
+console.log('API Key:', apiKey);
+console.log('Base URL:', baseUrl);
+
+  } catch (error) {
+      console.error('Error sending SMS:', error);
+  }
+};
+
+
+
   export const generatePDFReceipt = async (commande: any) => {
     return new Promise<string>((resolve, reject) => {
       const doc = new PDFDocument();
@@ -92,3 +132,4 @@ export const sendMail = async (to: string, subject: string, message: string, att
       });
     });
   };
+

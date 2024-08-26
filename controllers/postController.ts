@@ -1,7 +1,8 @@
 import { Express, Request, Response } from 'express';
 import prisma from '../database/db.config';
 import cloudinary from '../config/cloudinary';
-import { sendMail } from '../utils/utils';
+import { sendMail, sendSMS } from '../utils/utils';
+
 
 export const createPost = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
@@ -9,8 +10,8 @@ export const createPost = async (req: Request, res: Response) => {
     const file = req.file;
 
     try {
-        if (!userId) {
-            return res.status(401).json({ message: 'User not found!' });
+        if(!userId){
+            return res.status(401).json({ message: 'userId from token not found' });
         }
 
         const user = await prisma.user.findUnique({
@@ -27,7 +28,7 @@ export const createPost = async (req: Request, res: Response) => {
         }
 
         if (user.credit == 0) {
-            return res.status(400).json({ message: 'You are out of credit. Please refill your credit.' });
+            return res.status(400).json({ message: 'You are out of credit. Please recharge.' });
         }
 
         if (!file && !content) {
@@ -82,8 +83,9 @@ export const createPost = async (req: Request, res: Response) => {
         user.credit -= 2;
         await prisma.user.update({ where: { id: userId }, data: { credit: user.credit } });
 
-        if (user.credit <= 6) {
+        if (user.credit <= 32) {
             sendMail(user.email, 'Credit Refill Alert', `You have ${user.credit} credits left. Please consider refilling your account.`);
+            sendSMS(user.phoneNumber, `You have ${user.credit} credits left. Please consider refilling your account.`);
         }
 
         const post = await prisma.post.create({

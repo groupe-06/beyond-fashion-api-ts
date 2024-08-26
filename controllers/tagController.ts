@@ -11,9 +11,10 @@ export const createTag = async (req: Request, res: Response) => {
       if (!userId) {
         return res.status(401).json({ message: 'Unauthorized.' });
       }
-
+     
       if (!name) {
         return res.status(400).json({ message: 'Tag name is required.' });
+
       }
   
       const existingTag = await prisma.tag.findFirst({
