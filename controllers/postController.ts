@@ -67,11 +67,14 @@ export const createPost = async (req: Request, res: Response) => {
         const validTags: { id: number }[] = [];
         if (parsedTags && parsedTags.length > 0) {
             for (const tagName of parsedTags) {
-                const tag = await prisma.tag.findUnique({
+                let tag = await prisma.tag.findUnique({
                     where: { name: tagName },
                 });
                 if (!tag) {
-                    return res.status(400).json({ message: `Tag "${tagName}" does not exist.` });
+                    // Créer le tag s'il n'existe pas
+                    tag = await prisma.tag.create({
+                        data: { name: tagName },
+                    });
                 }
                 validTags.push({ id: tag.id });
             }
