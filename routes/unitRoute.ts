@@ -5,6 +5,6 @@ import { getToken } from '../middlewares/authMiddlewares';
 
 const router = Router();
 
-router.post('/', getToken, createUnit);
+router.post('/create', getToken, createUnit);
 
 export default router;

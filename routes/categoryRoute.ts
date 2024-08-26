@@ -4,7 +4,7 @@ import { getToken } from '../middlewares/authMiddlewares';
 
 const router = Router();
 
-router.post('/', getToken, createCategory);
-router.delete('/:categoryId', getToken, deleteCategory);
+router.post('/create', createCategory);
+router.delete('/:categoryId', deleteCategory);
 
 export default router;

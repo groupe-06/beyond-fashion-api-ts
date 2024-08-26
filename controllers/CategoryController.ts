@@ -7,6 +7,19 @@ export const createCategory = async (req: Request, res: Response) => {
 
   try {
     // Vérifier si la catégorie existe déjà
+
+    if(!name || !unitId || !image) {
+      return res.status(400).json({ message: 'Tous les champs sont obligatoires' });
+    }
+
+    const unit = await prisma.unit.findUnique({
+      where: { id: unitId },
+    });
+
+    if(!unit) {
+      return res.status(400).json({ message: 'Unit wiht id ' + unitId + ' not found' });
+    }
+    
     const existingCategory = await prisma.category.findFirst({
       where: { name },
     });

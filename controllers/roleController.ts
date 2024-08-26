@@ -5,9 +5,23 @@ import prisma from '../database/db.config';
 export const createRole = async (req: Request, res: Response) => {
     const { name } = req.body;
     try {
+
+        if(!name) {
+            return res.status(400).json({ message: 'Missing required field: name' });
+        }
+
+        const existingRole = await prisma.role.findFirst({
+            where: { name },
+        });
+
+        if(existingRole){
+            return res.status(400).json({ message: 'Role with name ' + name + ' already exists' });
+        }
+
         const role = await prisma.role.create({
             data: { name },
         });
+        
         res.status(201).json({ message: 'Role created successfully', role });
     } catch (error) {
         res.status(500).json({ message: 'Failed to create role', error });

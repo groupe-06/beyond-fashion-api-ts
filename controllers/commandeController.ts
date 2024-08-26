@@ -10,14 +10,14 @@ const prisma = new PrismaClient();
 
 export const createCommande = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
-    const { articles } = req.body;
+    const { commandDetails } = req.body;
 
     try {
         if (!userId) {
             return res.status(401).json({ message: 'userId from token not found' });
         }
 
-        if (!articles || !Array.isArray(articles) || articles.length === 0) {
+        if (!commandDetails || !Array.isArray(commandDetails) || commandDetails.length === 0) {
             return res.status(400).json({ message: 'Invalid request data.' });
         }
 
@@ -50,7 +50,7 @@ export const createCommande = async (req: Request, res: Response) => {
 
         let totalPrice = 0;
 
-        for (const item of articles) {
+        for (const item of commandDetails) {
             const article = await prisma.article.findUnique({
                 where: { id: item.articleId },
                 include: { 
@@ -76,8 +76,8 @@ export const createCommande = async (req: Request, res: Response) => {
 
             const conversion = await prisma.conversion.findFirst({
                 where: {
-                    fromUnitId: item.unitId,
-                    toUnitId: article.category.unit.id,
+                    fromUnitId: article.category.unit.id,
+                    toUnitId: item.unitId
                 },
             });
 
