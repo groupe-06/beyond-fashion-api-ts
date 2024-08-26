@@ -83,7 +83,7 @@ export const createPost = async (req: Request, res: Response) => {
         user.credit -= 2;
         await prisma.user.update({ where: { id: userId }, data: { credit: user.credit } });
 
-        if (user.credit <= 32) {
+        if (user.credit <= 6) {
             sendMail(user.email, 'Credit Refill Alert', `You have ${user.credit} credits left. Please consider refilling your account.`);
             sendSMS(user.phoneNumber, `You have ${user.credit} credits left. Please consider refilling your account.`);
         }
