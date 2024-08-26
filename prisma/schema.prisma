@@ -46,6 +46,7 @@ model User {
   maleMeasurements   MaleMeasurement[]
   blocks             Block[]             @relation("UserBlocks")
   blockedBy          Block[]             @relation("BlockedUsers")
+   articles          Article[]
 
   @@map("user")
 }
@@ -100,8 +101,50 @@ model Post {
   postDislikes PostDislike[]
   reports      Report[]
   favorites    Favorite[]
-
+   tag     Tag[]
   @@map("post")
+}
+model Tag {
+  id       Int       @id @default(autoincrement())
+  name     String
+  articles Article[]
+  posts     Post[]
+
+  @@map("tag")
+}
+
+model Unit {
+  id         Int        @id @default(autoincrement())
+  name       String
+  categories Category[]
+
+  @@map("unit")
+}
+model Article {
+  id            Int      @id @default(autoincrement())
+  name          String
+  stockQuantity Int
+  unitPrice     Float
+  photo         String
+  color      String?
+  userId        Int // Le vendeur est maintenant référencé comme un User
+  user          User     @relation(fields: [userId], references: [id])
+  categoryId    Int
+  category      Category @relation(fields: [categoryId], references: [id])
+  tags          Tag[]
+
+  @@map("article")
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  image    String
+ unitId   Int
+  Unit     Unit @relation(fields: [unitId ], references: [id])
+  articles Article[]
+
+  @@map("category")
 }
 
 model Rate {
