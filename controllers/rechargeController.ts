@@ -1,13 +1,15 @@
 import { Request, Response } from 'express';
 import prisma from '../database/db.config'; // Adjust the path to your Prisma client
 import { sendMail } from '../utils/utils';
+import { sendSMS } from '../utils/utils';
 
 export const rechargeAmount = async (req: Request, res: Response) => {
     try {
         const userId = (req as any).userId;
         const { amount, receiverEmail } = req.body;
-        if(!userId) {
-            return res.status(401).json({ message: 'User not found' });
+
+        if (!userId) {
+            return res.status(401).json({ message: 'userId from token not found' });
         }
 
         const user = await prisma.user.findUnique({
@@ -35,6 +37,10 @@ export const rechargeAmount = async (req: Request, res: Response) => {
             return res.status(500).json({ message: 'Failed to generate code' });
         }
 
+        if(amount < 100 || amount > 1000){
+            return res.status(400).json({ message: 'Amount must be between 100 and 1000' });
+        }
+
         if(receiverEmail){
             const receiver = await prisma.user.findUnique({
                 where: { email: receiverEmail },
@@ -58,7 +64,8 @@ export const rechargeAmount = async (req: Request, res: Response) => {
                 },
             });
             sendMail(user.email, 'Beyound fashion recharge', `Félicitations votre achat de recharge à ${receiver.firstname} ${receiver.lastname} est effectué avec succes.`);
-            sendMail(receiver.email, 'Beyound fashion recharge', `${receiver.firstname} ${receiver.lastname} vient de vous faire un achat de recharge. Votre code de rechargement est : ${recharge.code}`);
+            sendMail(receiver.email, 'Beyound fashion recharge', `${user.firstname} ${user.lastname} vient de vous faire un achat de recharge. Le code de rechargement est : ${recharge.code}`);
+            sendSMS(receiver.phoneNumber, `${user.firstname} ${user.lastname} vient de vous faire un achat de recharge. Le code de rechargement est : ${recharge.code}`);
             return res.status(201).json({ message: 'Recharge created successfully', ...recharge, code: recharge.code.toString() });
         }
 
@@ -70,6 +77,7 @@ export const rechargeAmount = async (req: Request, res: Response) => {
             },
         });
         sendMail(user.email, 'Beyound fashion recharge', `Félicitations votre achat de recharge est effectué avec succes. Votre code de rechargement est : ${recharge.code}`);
+        sendSMS(user.phoneNumber, `Félicitations votre achat de recharge est effectué avec succes. Votre code de rechargement est : ${recharge.code}`);
         return res.status(201).json({ message: 'Recharge created successfully', recharge });
     } catch (error) {
         console.error('Error recharging credit:', error);
@@ -102,8 +110,8 @@ export const creditRecharge = async (req: Request, res: Response) => {
     const { code } = req.body;
     try{
 
-        if(!userId) {
-            return res.status(401).json({ message: 'User not found' });
+        if (!userId) {
+            return res.status(401).json({ message: 'userId from token not found' });
         }
 
         if(!code){
@@ -143,14 +151,16 @@ export const creditRecharge = async (req: Request, res: Response) => {
             }
 
             const credit = recharging(recharge.amount);
-            const user =await prisma.user.update({
+            const user = await prisma.user.update({
                 where: { id: userId },
                 data: { credit: { increment: credit } },
             });
+
             await prisma.recharge.update({
                 where: { id: recharge.id },
                 data: { isUsed: true },
             });
+            
             return res.status(201).json({ message: `Credit recharge successful. Your new credit is now ${user.credit}` });
         }
 
