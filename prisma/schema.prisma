@@ -167,7 +167,7 @@ model Conversion {
 
 model Rate {
   id          Int      @id @default(autoincrement())
-  stars       Float    @db.Float
+  stars       Float    
   description String?  @db.VarChar(800)
   postId      Int
   post        Post     @relation(fields: [postId], references: [id])
