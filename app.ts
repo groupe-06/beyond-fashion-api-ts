@@ -23,7 +23,7 @@ import commandeRouter from './routes/commandeRoute'
 import searchRoute from './routes/searchRoute';
 import conversionRoute from './routes/conversionRoute';
 import 'dotenv/config'; // Import articleCommande route
-
+import cors from 'cors'; 
 const app = express();
 
 app.use(cors({
@@ -34,7 +34,7 @@ app.use(cors({
   
 const PORT = process.env.PORT || 3000;
 const uri = process.env.URI;
-app.use(cors());
+
 app.use(express.json());
 app.use(`${uri}/roles`, roleRoute);
 app.use(`${uri}/users`, userRoute);
