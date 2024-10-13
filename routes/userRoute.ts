@@ -10,6 +10,7 @@ import  upload  from '../config/multer';
 const router = Router();
 
 router.post('/create',upload.single('photo'), createUser);
+router.post('/users/register',upload.single('photo'), createUser);
 router.get('/getAll', getToken, getAllUsers);
 router.get('/get-one', getToken, getUserById);
 router.put('/update', getToken, updateUser);

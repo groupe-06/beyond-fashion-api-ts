@@ -23,13 +23,13 @@ export const createPost = async (req: Request, res: Response) => {
             return res.status(401).json({ message: `User with ID ${userId} not found!` });
         }
 
-        if (!user.roles.some(r => r.name === 'TAILOR')) {
+        /*if (!user.roles.some(r => r.name === 'TAILOR')) {
             return res.status(401).json({ message: 'You are not authorized to create a post' });
-        }
+        }*/
 
-        if (user.credit == 0) {
+      /*  if (user.credit == 0) {
             return res.status(400).json({ message: 'You are out of credit. Please recharge.' });
-        }
+        }*/
 
         if (!file && !content) {
             return res.status(400).json({ message: 'Either file or text content is required.' });

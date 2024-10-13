@@ -15,7 +15,7 @@
     "@prisma/client": "^5.18.0",
     "@vinejs/vine": "^2.1.0",
     "arg": "^5.0.2",
-    "axios": "^1.7.4",
+    "axios": "^1.7.7",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
