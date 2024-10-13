@@ -4,6 +4,7 @@ import { getToken } from '../middlewares/authMiddlewares';
 // import { validateUserRequest } from '../middlewares/shemaValidator';
 import { createCommande,deleteCommandeArticle,completePurchase} from '../controllers/commandeController';
 import  upload  from '../config/multer';
+import { getUserPosts } from '../controllers/postController';
 
 
 
@@ -18,6 +19,8 @@ router.post('/login', login);
 router.put('/update-profile', getToken, updateProfile);
 router.post('/block/:blockedId',getToken, blockUser);
 router.post('/unblock/:deblockedId',getToken, unblockUser);
+router.get('/get-post',getToken, getUserPosts);
+
 
 
 export default router;
