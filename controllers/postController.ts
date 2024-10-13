@@ -261,3 +261,43 @@ export const deletePost = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Failed to delete post', error });
     }
 };
+
+
+export const getUserPosts = async (req: Request, res: Response) => {
+    const userId = (req as any).userId;
+
+    try {
+        if (!userId) {
+            return res.status(401).json({ message: 'User not found!' });
+        }
+
+        // Récupérer l'utilisateur pour vérifier son existence
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            include: { roles: true },
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: `User with ID ${userId} not found!` });
+        }
+
+        // Récupérer tous les posts de l'utilisateur connecté
+        const posts = await prisma.post.findMany({
+            where: { authorId: userId },
+            include: {
+                tag: true, 
+                comments: true, 
+                postLikes: true,
+            },
+            orderBy: { publishedAt: 'desc' },
+        });
+
+        return res.status(200).json({ message: 'Posts retrieved successfully', posts });
+    } catch (error) {
+        console.error('Error in getUserPosts:', error);
+        return res.status(500).json({
+            message: 'Failed to retrieve posts',
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
+};
