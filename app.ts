@@ -23,8 +23,17 @@ import commandeRouter from './routes/commandeRoute'
 import searchRoute from './routes/searchRoute';
 import conversionRoute from './routes/conversionRoute';
 import 'dotenv/config'; // Import articleCommande route
+import cors from 'cors';
+
 
 const app = express();
+
+app.use(cors({
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
+  
 const PORT = process.env.PORT || 3000;
 const uri = process.env.URI;
 
@@ -69,3 +78,4 @@ io.on('connection', (socket) => {
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+

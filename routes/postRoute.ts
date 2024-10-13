@@ -6,7 +6,7 @@ import  upload  from '../config/multer';
 
 const router = Router();
 
-router.post('/create',getToken,  upload.single('content'), createPost);
+router.post('/create', upload.single('content'), createPost);
 router.put('/update/:id', getToken,validatePostRequest, updatePost);
 router.delete('/delete/:id', getToken, deletePost);
 
