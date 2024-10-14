@@ -3,7 +3,7 @@ import prisma from '../database/db.config';
 
 export const addMeasurement = async (req: Request, res: Response) => {
   const { shoulder, chest, waist, hips, sleeveLength, neck, back, armhole, thigh, calf, bust, inseam } = req.body;
-  const userId = req.user.id;
+  const userId = (req as any).userId;
   
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -55,7 +55,7 @@ export const addMeasurement = async (req: Request, res: Response) => {
 };
 
 export const updateMeasurement = async (req: Request, res: Response) => {
-  const userId = req.user.id;
+  const userId = (req as any).userId;
   const measurementId = req.params.id;
 
   try {
@@ -93,7 +93,7 @@ export const updateMeasurement = async (req: Request, res: Response) => {
 };
 
 export const deleteMeasurement = async (req: Request, res: Response) => {
-  const userId = req.user.id;
+  const userId = (req as any).userId;
   const measurementId = req.params.id;
 
   try {
@@ -122,7 +122,6 @@ export const deleteMeasurement = async (req: Request, res: Response) => {
 
 export const getMeasurements = async (req: Request, res: Response) => {
   const userId = (req as any).userId;
-  console.log(userId);
 
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });
