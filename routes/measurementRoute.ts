@@ -7,6 +7,6 @@ const router = Router();
 router.post('/add', getToken, addMeasurement);
 router.put('/update/:id', getToken, updateMeasurement);
 router.delete('/delete/:id', getToken, deleteMeasurement);
-router.get('/get', getToken, getMeasurements);
+router.get('/all', getToken, getMeasurements);
 
 export default router;

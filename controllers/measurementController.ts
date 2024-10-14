@@ -121,7 +121,8 @@ export const deleteMeasurement = async (req: Request, res: Response) => {
 };
 
 export const getMeasurements = async (req: Request, res: Response) => {
-  const userId = req.user.id;
+  const userId = (req as any).userId;
+  console.log(userId);
 
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });

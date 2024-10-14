@@ -10,7 +10,7 @@ import { getUserPosts } from '../controllers/postController';
 
 const router = Router();
 
-router.post('/register',upload.single('photo'), register);
+router.post('/register', upload.single('photo'), register);
 router.get('/getAll', getToken, getAllUsers);
 router.get('/get-one', getToken, getUserById);
 router.put('/update', getToken, updateUser);
