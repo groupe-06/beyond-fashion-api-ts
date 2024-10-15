@@ -339,7 +339,7 @@ export const verifyValidityToken = async (req: Request, res: Response) => {
 
     try {
         // Vérifier si le token est blacklisté
-        const blacklistedToken = await prisma.blackListToken.findUniqueOrThrow({
+        const blacklistedToken = await prisma.blackListToken.findUnique({
             where: {
                 token: token
             }
