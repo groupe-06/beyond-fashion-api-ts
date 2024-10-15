@@ -109,6 +109,33 @@ export const deleteStory = async (req: Request, res: Response) => {
         return res.status(500).json({ message: 'Failed to delete story', error });
     }
 }
+// Endpoint pour récupérer les informations de l'auteur d'une story
+export const getAuthorByStoryId = async (req: Request, res: Response) => {
+    const { storyId } = req.params; // Récupérer le storyId depuis les paramètres de l'URL
+
+    try {
+        // Récupérer la story et inclure les informations de l'auteur (user)
+        const story = await prisma.story.findUnique({
+            where: { id: Number(storyId) },
+            include: {
+                author: true, // Inclure les informations de l'auteur (user)
+            },
+        });
+
+        if (!story) {
+            return res.status(404).json({ message: `Story with ID ${storyId} not found` });
+        }
+
+        // Vérifier si l'auteur est présent
+        if (!story.author) {
+            return res.status(404).json({ message: 'Author not found for this story' });
+        }
+
+        return res.status(200).json({ message: 'Author fetched successfully', author: story.author });
+    } catch (error) {
+        return res.status(500).json({ message: 'Failed to fetch author', error });
+    }
+};
 
 const deleteExpiredStories = async () => {
     const now = new Date();
