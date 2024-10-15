@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { cryptPassword, comparePasswords, generateToken } from '../utils/utils';
 import prisma from '../database/db.config';
 import cloudinary from '../config/cloudinary';
+import jwt from 'jsonwebtoken';
+
 
 export const register = async (req: Request, res: Response) => {
     try {
@@ -319,28 +321,55 @@ export const unblockUser = async (req: Request, res: Response) => {
     }
 };
 
-export const verifyValidityToken = (req: Request, res: Response) => {
-    const token = (req as any).token;
+export const verifyValidityToken = async (req: Request, res: Response) => {
+    const {token} = req.body;
     if (!token) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        return res.status(401).json({ message: 'Unauthorized: No token provided' });
     }
-    // verify if token not expire and not revoked
-    // if valid return 200 OK else return 401 Unauthorized
-    // Example:
-    // const verified = verifyToken(token);
-    // if (verified) {
-    //     return res.status(200).json({ message: 'Valid token' });
-    // } else {
-    //     return res.status(401).json({ message: 'Unauthorized' });
-    // }
-    // You can use a library like jsonwebtoken for this purpose
-    // const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    // if (decoded) {
-    //     return res.status(200).json({ message: 'Valid token' });
-    // } else {
-    //     return res.status(401).json({ message: 'Unauthorized' });
-    // }
-    // or you can implement your own token verification logic here
-    // for example, check if the token exists in your database
-    return res.status(200).json({ message: 'Valid token' });
+
+    try{
+        const blacklistedToken = await prisma.blackListToken.findUnique({
+            where: {
+                token: token
+            }
+        });
+    
+        if(blacklistedToken) {
+            return res.status(401).json({ message: 'Unauthorized: Token blacklisted' });
+        }
+
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET || '9f86d081884c7d659a2feaa0c55ad023') as jwt.JwtPayload;
+        return res.status(200).json({ message: 'Valid token'});
+    }catch(error) {
+        console.log('Token verification error:', error);
+        return res.status(401).json({ message: 'Unauthorized: Invalid or expired token' });
+    }
 }
+
+//res.clearCookie('token');
+//return res.status(200).json({ message: 'Logged out successfully' });
+
+export const logout = async (req: Request, res: Response) => {
+    const token = (req as any).token;
+
+    try {
+        // Vérifier si le token est déjà blacklisté
+        const tokenExists = await prisma.blackListToken.findUnique({
+            where: { token }
+        });
+
+        if (tokenExists) {
+            return res.status(400).json({ message: 'Token already blacklisted' });
+        }
+
+        // Enregistrer le token dans la table blacklistToken
+        await prisma.blackListToken.create({
+            data: { token }
+        });
+
+        return res.status(200).json({ message: 'Logged out successfully' });
+    } catch (error) {
+        console.error('Logout error:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};

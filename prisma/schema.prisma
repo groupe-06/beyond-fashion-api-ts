@@ -346,3 +346,9 @@ model CommandeArticle {
 
   @@map("commande_article")
 }
+
+model BlackListToken {
+  id           Int      @id @default(autoincrement())
+  token        String   @unique
+  @@map("blacklist_token")
+}
