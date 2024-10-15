@@ -332,13 +332,14 @@ export const verifyValidityToken = async (req: Request, res: Response) => {
 
     // Extraire le token (enlever 'Bearer ')
     const token = authHeader.split(' ')[1];
+    console.log('Token:', token);
 
     // Vérifier si Prisma est bien connecté et si le modèle est disponible
     console.log('Prisma blackListToken model:', prisma.blackListToken);
 
     try {
         // Vérifier si le token est blacklisté
-        const blacklistedToken = await prisma.blackListToken.findUnique({
+        const blacklistedToken = await prisma.blackListToken.findUniqueOrThrow({
             where: {
                 token: token
             }
