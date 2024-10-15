@@ -20,7 +20,7 @@ router.post('/unblock/:deblockedId',getToken, unblockUser);
 
 router.get('/get-post',getToken, getUserPosts);
 router.get('/logout', getTokenFromHeader, logout);
-router.get('/verify', verifyValidityToken);
+router.post('/verify', verifyValidityToken);
 
 
 
