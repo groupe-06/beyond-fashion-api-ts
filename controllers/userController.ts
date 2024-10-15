@@ -321,7 +321,7 @@ export const unblockUser = async (req: Request, res: Response) => {
     }
 };
 
-export const verifyValidityToken = async (req: Request, res: Response) => {
+export const verifyValidityUserToken = async (req: Request, res: Response) => {
     // Récupérer le header Authorization
     const authHeader = req.headers.authorization;
 
