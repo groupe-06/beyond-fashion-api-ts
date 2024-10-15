@@ -90,9 +90,19 @@ export const getAllStoryByConnectedUser = async(req: Request, res: Response) => 
 
 export const deleteStory = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
+        const StorytId = parseInt(req.params.id);
+
+        const stories = await prisma.story.findUnique({
+            where: { id:  StorytId},
+        });
+    const userId = (req as any).userId;
+
+    if (stories?.authorId !== userId) {
+        return res.status(401).json({ message: 'You are not authorized to delete this story.' });
+    }
+       
         const story = await prisma.story.delete({
-            where: { id: Number(id) },
+            where: { id: Number( StorytId) },
         });
         return res.status(200).json({ message: 'Story deleted successfully', story });
     } catch (error) {
