@@ -321,6 +321,21 @@ export const unblockUser = async (req: Request, res: Response) => {
     }
 };
 
+export const verifyValidityToken = async (req: Request, res: Response) => {
+    const {token} = req.body;
+    if (!token) {
+        return res.status(401).json({ message: 'Unauthorized: No token provided' });
+    }
+    try{
+        const decodedToken = jwt.verify(token, process.env.JWT_SECRET || '9f86d081884c7d659a2feaa0c55ad023') as jwt.JwtPayload;
+        console.log(decodedToken);
+        return res.status(200).json({ message: 'Valid token'});
+    }catch(error) {
+        console.log('Token verification error:', error);
+        return res.status(401).json({ message: 'Unauthorized: Invalid or expired token' });
+    }
+}
+
 export const verifyValidityUserToken = async (req: Request, res: Response) => {
     // Récupérer le header Authorization
     const authHeader = req.headers.authorization;
