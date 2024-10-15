@@ -24,6 +24,11 @@ export const generateToken = async (user: any) => {
     return token;
 };
 
+export const verifyTokenValidity = async (token: string) => {
+  const decoded = jwt.verify(token, process.env.JWT_SECRET || '9f86d081884c7d659a2feaa0c55ad023');
+  return decoded;
+}
+
 export const sendMail = async (to: string, subject: string, message: string, attachmentPath?: string) => {
   const transporter = nodemailer.createTransport({
     service: 'Gmail',

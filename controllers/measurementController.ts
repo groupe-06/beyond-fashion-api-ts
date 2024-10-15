@@ -3,7 +3,10 @@ import prisma from '../database/db.config';
 
 export const addMeasurement = async (req: Request, res: Response) => {
   const { shoulder, chest, waist, hips, sleeveLength, neck, back, armhole, thigh, calf, bust, inseam } = req.body;
-  const userId = req.user.id;
+  const userId = (req as any).userId;
+
+   // Convertir les valeurs en Float ou null si elles sont non définies ou vides
+   const toFloat = (value: any) => value ? parseFloat(value) : null;
   
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -16,16 +19,16 @@ export const addMeasurement = async (req: Request, res: Response) => {
       const maleMeasurement = await prisma.maleMeasurement.create({
         data: {
           userId,
-          shoulder,
-          chest,
-          waist,
-          hips,
-          sleeveLength,
-          neck,
-          back,
-          armhole,
-          thigh,
-          calf
+          shoulder: toFloat(shoulder),
+          chest: toFloat(chest),
+          waist: toFloat(waist),
+          hips: toFloat(hips),
+          sleeveLength: toFloat(sleeveLength),
+          neck: toFloat(neck),
+          back: toFloat(back),
+          armhole: toFloat(armhole),
+          thigh: toFloat(thigh),
+          calf: toFloat(calf)
         }
       });
       return res.status(201).json(maleMeasurement);
@@ -33,13 +36,13 @@ export const addMeasurement = async (req: Request, res: Response) => {
       const femaleMeasurement = await prisma.femaleMeasurement.create({
         data: {
           userId,
-          shoulder,
-          chest,
-          waist,
-          hips,
-          bust,
-          inseam,
-          thigh
+          shoulder: toFloat(shoulder),
+          chest: toFloat(chest),
+          waist: toFloat(waist),
+          hips: toFloat(hips),
+          bust: toFloat(bust),
+          inseam: toFloat(inseam),
+          thigh: toFloat(thigh)
         }
       });
       return res.status(201).json(femaleMeasurement);
@@ -55,7 +58,7 @@ export const addMeasurement = async (req: Request, res: Response) => {
 };
 
 export const updateMeasurement = async (req: Request, res: Response) => {
-  const userId = req.user.id;
+  const userId = (req as any).userId;
   const measurementId = req.params.id;
 
   try {
@@ -93,7 +96,7 @@ export const updateMeasurement = async (req: Request, res: Response) => {
 };
 
 export const deleteMeasurement = async (req: Request, res: Response) => {
-  const userId = req.user.id;
+  const userId = (req as any).userId;
   const measurementId = req.params.id;
 
   try {
@@ -121,7 +124,7 @@ export const deleteMeasurement = async (req: Request, res: Response) => {
 };
 
 export const getMeasurements = async (req: Request, res: Response) => {
-  const userId = req.user.id;
+  const userId = (req as any).userId;
 
   try {
     const user = await prisma.user.findUnique({ where: { id: userId } });

@@ -78,6 +78,9 @@ export const getAllStoryByConnectedUser = async(req: Request, res: Response) => 
     try {
         const stories = await prisma.story.findMany({
             where: { authorId: Number(userId) },
+            orderBy: {
+                publishedAt: 'desc', // Sort by the most recent stories
+            },
         });
         return res.status(200).json({ message: 'Stories fetched successfully', stories });
     } catch (error) {

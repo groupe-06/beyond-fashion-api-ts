@@ -79,17 +79,21 @@ export const login = async (req: Request, res: Response) => {
     try {
         const user = await prisma.user.findUnique({
             where: { email: email?.trim() },
+            include: {
+                roles: true,
+            }
         });
         if (!user) {
-            return res.status(404).json({ message: 'Invalid email or password' });
+            return res.status(401).json({ message: 'Email ou mot de passe incorrect' });
         }
         const isMatch = comparePasswords(password?.trim(), user.password);
         if (!isMatch) {
-            return res.status(401).json({ message: 'Invalid email or password' });
+            return res.status(401).json({ message: 'Email ou mot de passe incorrect' });
         }
         const token = await generateToken(user);
 
-        const data = {...user, token};
+        const {password: _, ...userWithoutPassword} = user;
+        const data = {...userWithoutPassword, token};        
         
         return res.status(200).json({ message: 'User Logged in successfully', data });
     } catch (error) {
@@ -314,3 +318,29 @@ export const unblockUser = async (req: Request, res: Response) => {
         return res.status(500).json({ message: 'Failed to unblock user', error });
     }
 };
+
+export const verifyValidityToken = (req: Request, res: Response) => {
+    const token = (req as any).token;
+    if (!token) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+    // verify if token not expire and not revoked
+    // if valid return 200 OK else return 401 Unauthorized
+    // Example:
+    // const verified = verifyToken(token);
+    // if (verified) {
+    //     return res.status(200).json({ message: 'Valid token' });
+    // } else {
+    //     return res.status(401).json({ message: 'Unauthorized' });
+    // }
+    // You can use a library like jsonwebtoken for this purpose
+    // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // if (decoded) {
+    //     return res.status(200).json({ message: 'Valid token' });
+    // } else {
+    //     return res.status(401).json({ message: 'Unauthorized' });
+    // }
+    // or you can implement your own token verification logic here
+    // for example, check if the token exists in your database
+    return res.status(200).json({ message: 'Valid token' });
+}
