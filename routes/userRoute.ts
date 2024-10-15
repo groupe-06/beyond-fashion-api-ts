@@ -1,8 +1,6 @@
 import { Router } from 'express';
 import { register, getAllUsers, getUserById, deleteUser, updateUser, login, updateProfile, blockUser, unblockUser, logout, verifyValidityToken } from '../controllers/userController';
 import { getToken, getTokenFromHeader } from '../middlewares/authMiddlewares';
-// import { validateUserRequest } from '../middlewares/shemaValidator';
-import { createCommande,deleteCommandeArticle,completePurchase} from '../controllers/commandeController';
 import  upload  from '../config/multer';
 import { getUserPosts } from '../controllers/postController';
 
