@@ -6,6 +6,7 @@ import { sendMail, sendSMS } from '../utils/utils';
 
 export const createPost = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
+    console.log(userId);
     const { content, description, tags } = req.body;
     const file = req.file;
 
@@ -274,7 +275,7 @@ export const getUserPosts = async (req: Request, res: Response) => {
         // Récupérer l'utilisateur pour vérifier son existence
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            include: { roles: true },
+            include: { roles: true}
         });
 
         if (!user) {
@@ -297,6 +298,38 @@ export const getUserPosts = async (req: Request, res: Response) => {
         console.error('Error in getUserPosts:', error);
         return res.status(500).json({
             message: 'Failed to retrieve posts',
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
+};
+
+
+export const getAllPosts = async (req: Request, res: Response) => {
+    try {
+        const posts = await prisma.post.findMany({
+            include: {
+                tag: true,
+                comments: true,
+                postLikes: true,
+                author: {
+                    select: {
+                        id: true, 
+                        firstname: true, 
+                        lastname: true,
+                        credit: true,
+                        photoUrl: true,                        
+                    },
+                },
+                rates: true,
+                favorites: true,
+            },
+        });
+
+        return res.status(200).json({ message: 'Posts retrieved successfully', posts });
+    } catch (error) {
+        console.error('Error in getAllPosts:', error);
+        return res.status(500).json({
+            message: 'Failed to retrieve all posts',
             error: error instanceof Error ? error.message : String(error),
         });
     }

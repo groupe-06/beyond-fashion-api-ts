@@ -22,7 +22,7 @@ export const getToken = (req: Request, res: Response, next:NextFunction) =>{
         (req as any).userId = decodedToken.userId;
         next();
     } catch (error) {
-        return res.status(401).json({ message: 'Invalid token' });
+        return res.status(401).json({ message: 'Invalid tokens' });
     }
   
 }

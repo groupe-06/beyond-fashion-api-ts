@@ -41,7 +41,6 @@ app.use(`${uri}/users`, userRoute);
 app.use(`${uri}/users`,commandeRouter);
 app.use(`${uri}/measurements`, measurementRoute);
 app.use(`${uri}/recharge`, rechargeRoute);
-app.use(`${uri}/post`, postRouter);
 app.use(`${uri}/post`, reportRouter);
 app.use(`${uri}/post`, reactionRouter);
 app.use(`${uri}/stories`, storyRoute);
