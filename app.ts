@@ -27,9 +27,9 @@ import cors from 'cors';
 const app = express();
 
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'threadline-front-2.vercel.app', 'https://beyond-fashion-api-ts.onrender.com'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Origin, X-Requested-With, Content, Accept, Content-Type, Authorization']
   }));
   
 const PORT = process.env.PORT || 3000;
