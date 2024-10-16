@@ -165,7 +165,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 
 export const updateProfile = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
-    const { role } = req.body;
+    const { role, token } = req.body;
     try {
         
         if(!userId){
@@ -219,15 +219,20 @@ export const updateProfile = async (req: Request, res: Response) => {
                     roles: { connect: [{ id: roleFromDb.id }] }, 
                     credit: 40 
                 },
+                include: { roles: true }
             });
         } else {
             updatedUser = await prisma.user.update({
                 where: { id: Number(userId) },
                 data: { roles: { connect: [{ id: roleFromDb.id }] } },
+                include: { roles: true }
             });
         }
 
-        res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
+        const {password: _, ...userWithoutPassword} = updatedUser;
+        const data = {...userWithoutPassword, token};
+
+        res.status(200).json({ message: 'Profile updated successfully', data });
     } catch (error) {
         res.status(500).json({ message: 'Failed to update profile', error });
     }
