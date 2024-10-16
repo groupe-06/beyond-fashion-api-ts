@@ -151,6 +151,7 @@ export const createComment = async (req: Request, res: Response) => {
             select: {
               firstname: true,
               lastname: true,
+              photoUrl: true
             },
           } ,
           replies: {
@@ -159,6 +160,7 @@ export const createComment = async (req: Request, res: Response) => {
                 select: {
                   firstname: true,
                   lastname: true,
+                  photoUrl: true
                 },
               } 
             },
