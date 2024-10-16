@@ -43,7 +43,7 @@ export const incrementPostViews = async (req: Request, res: Response) => {
         });
 
         // Renvoie le post mis à jour
-        return res.status(200).json({ message: 'Post views updated', post: updatedPost.views });
+        return res.status(200).json({ message: 'Post views updated', post: updatedPost });
     } catch (error) {
         return res.status(500).json({ message: 'Failed to increment post views', error });
     }
