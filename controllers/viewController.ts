@@ -24,22 +24,6 @@ export const incrementPostViews = async (req: Request, res: Response) => {
         const updatedPost = await prisma.post.update({
             where: { id: postId },
             data: { views: post.views + 1 },
-            include: {
-                tag: true,
-                comments: true,
-                postLikes: true,
-                author: {
-                    select: {
-                        id: true, 
-                        firstname: true, 
-                        lastname: true,
-                        credit: true,
-                        photoUrl: true,                        
-                    },
-                },
-                rates: true,
-                favorites: true,
-            },
         });
 
         // Renvoie le post mis à jour
