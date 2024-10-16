@@ -68,11 +68,16 @@ export const updateMeasurement = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+     // Transformer les données reçues en float
+    const data = Object.fromEntries(
+      Object.entries(req.body).map(([key, value]) => [key, parseFloat(value as string)])
+    );
+
     if (user.gender === 'MALE') {
       const updatedMaleMeasurement = await prisma.maleMeasurement.update({
         where: { id: Number(measurementId) },
         data: {
-          ...req.body
+          ...data
         }
       });
       return res.status(200).json(updatedMaleMeasurement);
@@ -80,7 +85,7 @@ export const updateMeasurement = async (req: Request, res: Response) => {
       const updatedFemaleMeasurement = await prisma.femaleMeasurement.update({
         where: { id: Number(measurementId) },
         data: {
-          ...req.body
+          ...data
         }
       });
       return res.status(200).json(updatedFemaleMeasurement);
