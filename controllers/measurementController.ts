@@ -134,11 +134,11 @@ export const getMeasurements = async (req: Request, res: Response) => {
     }
 
     if (user.gender === 'MALE') {
-      const maleMeasurements = await prisma.maleMeasurement.findMany({ where: { userId } });
-      return res.status(200).json(maleMeasurements);
+      const data = await prisma.maleMeasurement.findMany({ where: { userId } });
+      return res.status(200).json({message: 'Mesures récupérées avec succès',  data});
     } else if (user.gender === 'FEMALE') {
-      const femaleMeasurements = await prisma.femaleMeasurement.findMany({ where: { userId } });
-      return res.status(200).json(femaleMeasurements);
+      const data = await prisma.femaleMeasurement.findMany({ where: { userId } });
+      return res.status(200).json({message: 'Mesures récupérées avec succès',  data});
     } else {
       return res.status(400).json({ message: 'Invalid gender' });
     }
