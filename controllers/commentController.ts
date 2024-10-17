@@ -57,7 +57,18 @@ export const createComment = async (req: Request, res: Response) => {
             commentData.parent = { connect: { id: parseInt(parentId) } };
         }
   
-        const comment = await prisma.comment.create({ data: commentData });
+        const comment = await prisma.comment.create({ 
+          data: commentData,
+          include: { 
+            author: { // Inclure les détails de l'auteur du commentaire
+                select: {
+                    firstname: true,
+                    lastname: true,
+                    photoUrl: true
+                }
+            }
+        }
+        });
 
         if(parentComment){
           await sendNotification(post.author.id, `${user.firstname} ${user.lastname} vient de commenter votre post ${content.substring(0, 30)}...`);
