@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../database/db.config";
-import cloudinary from '../config/cloudinary'; 
+import cloudinary from '../config/cloudinary';
 import cron from "node-cron";
 
 
@@ -9,7 +9,7 @@ export const createStory = async (req: Request, res: Response) => {
         const { content, description } = req.body;
         const userId = (req as any).userId;
         const file = req.file;
-     
+
 
         if (!userId) {
             return res.status(401).json({ message: 'Your user ID is undefined. Please login and try again' });
@@ -30,7 +30,7 @@ export const createStory = async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'You are not allowed to create a story' });
         }
 
-        let mediaUrl = content; 
+        let mediaUrl = content;
 
         if (file) {
             const media = await new Promise((resolve, reject) => {
@@ -41,7 +41,7 @@ export const createStory = async (req: Request, res: Response) => {
                         else resolve(result);
                     }
                 );
-                uploadStream.end(file.buffer); 
+                uploadStream.end(file.buffer);
             });
             mediaUrl = (media as any).secure_url;
         }
@@ -51,9 +51,9 @@ export const createStory = async (req: Request, res: Response) => {
 
         const story = await prisma.story.create({
             data: {
-                content: mediaUrl, 
-                description: description || '', 
-                authorId: userId, 
+                content: mediaUrl,
+                description: description || '',
+                authorId: userId,
                 expiresAt
             }
         });
@@ -66,14 +66,24 @@ export const createStory = async (req: Request, res: Response) => {
 
 export const getAllStories = async (req: Request, res: Response) => {
     try {
-        const stories = await prisma.story.findMany();
+        const stories = await prisma.story.findMany({
+            include: {
+                author: {
+                    select: {
+                        firstname: true,
+                        lastname: true,
+                        photoUrl: true
+                    }
+                }
+            }
+        });
         return res.status(200).json({ message: 'Stories fetched successfully', stories });
     } catch (error) {
         return res.status(500).json({ message: 'Failed to fetch stories', error });
     }
 }
 
-export const getAllStoryByConnectedUser = async(req: Request, res: Response) => {
+export const getAllStoryByConnectedUser = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
     try {
         const stories = await prisma.story.findMany({
@@ -93,16 +103,16 @@ export const deleteStory = async (req: Request, res: Response) => {
         const StorytId = parseInt(req.params.id);
 
         const stories = await prisma.story.findUnique({
-            where: { id:  StorytId},
+            where: { id: StorytId },
         });
-    const userId = (req as any).userId;
+        const userId = (req as any).userId;
 
-    if (stories?.authorId !== userId) {
-        return res.status(401).json({ message: 'You are not authorized to delete this story.' });
-    }
-       
+        if (stories?.authorId !== userId) {
+            return res.status(401).json({ message: 'You are not authorized to delete this story.' });
+        }
+
         const story = await prisma.story.delete({
-            where: { id: Number( StorytId) },
+            where: { id: Number(StorytId) },
         });
         return res.status(200).json({ message: 'Story deleted successfully', story });
     } catch (error) {
