@@ -66,6 +66,17 @@ export const createComment = async (req: Request, res: Response) => {
                     lastname: true,
                     photoUrl: true
                 }
+            },
+            replies: { // Inclure les sous-commentaires
+                include: {
+                    author: { // Inclure les détails de l'auteur du sous-commentaire
+                        select: {
+                            firstname: true,
+                            lastname: true,
+                            photoUrl: true
+                        }
+                    }
+                }
             }
         }
         });
@@ -177,7 +188,7 @@ export const createComment = async (req: Request, res: Response) => {
             },
           },
         },
-        orderBy: { createdAt: 'asc' } // Trier par date de création
+        orderBy: { createdAt: 'desc' } // Trier par date de création
       });
   
       // Fonction récursive pour structurer les commentaires et sous-commentaires
