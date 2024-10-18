@@ -322,7 +322,7 @@ export const getAllPosts = async (req: Request, res: Response) => {
                 comments: true,
                 postLikes: true,
                 favorites: true,
-                rates: true,g
+                rates: true,
                 _count: {
                     select: {
                         postLikes: true,
