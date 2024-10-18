@@ -286,14 +286,24 @@ export const getUserPosts = async (req: Request, res: Response) => {
         const posts = await prisma.post.findMany({
             where: { authorId: userId },
             include: {
-                tag: true, 
-                comments: true, 
+                tag: true,
+                comments: true,
                 postLikes: true,
+                favorites: true,
+                _count: {
+                    select: {
+                        postLikes: true,
+                        favorites: true,
+                    }
+                },
+                postDislikes: true,
+                author: true,
+                rates: true,
             },
-            orderBy: { publishedAt: 'desc' },
+            // orderBy: { publishedAt: 'desc' },
         });
 
-        return res.status(200).json({ message: 'Posts retrieved successfully', posts });
+        return res.status(200).json({ message: 'Posts retrieved successfully', ...posts });
     } catch (error) {
         console.error('Error in getUserPosts:', error);
         return res.status(500).json({
@@ -311,6 +321,16 @@ export const getAllPosts = async (req: Request, res: Response) => {
                 tag: true,
                 comments: true,
                 postLikes: true,
+                favorites: true,
+                rates: true,g
+                _count: {
+                    select: {
+                        postLikes: true,
+                        favorites: true,
+                        rates: true,
+                    }
+                },
+                postDislikes: true,
                 author: {
                     select: {
                         id: true, 
@@ -320,12 +340,11 @@ export const getAllPosts = async (req: Request, res: Response) => {
                         photoUrl: true,                        
                     },
                 },
-                rates: true,
-                favorites: true,
             },
         });
 
-        return res.status(200).json({ message: 'Posts retrieved successfully', posts });
+
+        return res.status(200).json({ message: 'Posts retrieved successfully', ...posts});
     } catch (error) {
         console.error('Error in getAllPosts:', error);
         return res.status(500).json({
