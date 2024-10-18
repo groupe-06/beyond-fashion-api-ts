@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { followUser, unfollowUser } from '../controllers/userFollowController';
+import { followUser, unfollowUser, getUnfollowedTailors } from '../controllers/userFollowController';
 import { getToken } from '../middlewares/authMiddlewares';
 
 const router = Router();
 
 router.post('/follow/:followingId', getToken, followUser);
 router.delete('/unfollow/:followingId', getToken, unfollowUser);
-
+router.get('/getUnfollowedTailors', getToken, getUnfollowedTailors);
 
 export default router; 

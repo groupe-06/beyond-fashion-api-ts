@@ -62,3 +62,28 @@ export const unfollowUser = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Failed to unfollow user soryyyyyyyyyyyyyyyy', error });
   }
 };
+export const getUnfollowedTailors = async (req: Request, res: Response) => {
+  const followerId = (req as any).userId; // Assuming you have middleware setting userId from token
+
+  try {
+    if (!followerId) {
+      return res.status(401).json({ message: 'Unauthorized access.' });
+    }
+
+    // Fetch all tailors who are not already followed by the current user
+    const tailors = await prisma.user.findMany({
+      where: {
+        roles: { some: { name: 'TAILOR' } }, // Filter by TAILOR role
+        id: { not: followerId }, // Exclude the current user
+        followings: {
+          none: { followerId }, // Exclude those already followed by the current user
+        }
+      }
+    });
+
+    return res.status(200).json({ users: tailors });
+  } catch (error) {
+    return res.status(500).json({ message: 'Failed to fetch unfollowed tailors.', error });
+  }
+};
+
