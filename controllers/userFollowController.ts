@@ -86,4 +86,31 @@ export const getUnfollowedTailors = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Failed to fetch unfollowed tailors.', error });
   }
 };
+export const getFollowedUsers = async (req: Request, res: Response) => {
+  const followerId = (req as any).userId; // L'ID de l'utilisateur connecté
+
+  try {
+    if (!followerId) {
+      return res.status(401).json({ message: 'Unauthorized access.' });
+    }
+
+    // Récupérer les utilisateurs suivis par l'utilisateur connecté
+    const followedUsers = await prisma.user.findMany({
+      where: {
+        followings: {
+          some: {
+            followerId: followerId, // Utilisez followerId pour trouver les suivis
+          }
+        }
+      },
+      include: {
+        roles: true, // Inclure les rôles si nécessaire
+      }
+    });
+
+    res.status(200).json({ users: followedUsers });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch followed users.', error });
+  }
+};
 
