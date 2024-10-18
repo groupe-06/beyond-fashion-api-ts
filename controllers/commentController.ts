@@ -27,7 +27,10 @@ export const createComment = async (req: Request, res: Response) => {
         
         const post = await prisma.post.findUnique({
             where: { id: parseInt(postId) },
-            include: { author: true }
+            include: {
+               author: true,
+
+            }
         });
   
         if (!post) {
