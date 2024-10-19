@@ -154,3 +154,52 @@ export const getMeasurements = async (req: Request, res: Response) => {
     return res.status(500).json({ error: 'Unknown error occurred' });
   }
 };
+export const getMeasurementsbis = async (req: Request, res: Response) => {
+  const userId = req.params.userId;
+
+  console.log('Requested userId:', userId);
+
+  if (!userId) {
+    console.error('UserId is missing in the request params');
+    return res.status(400).json({ error: 'UserId is required' });
+  }
+
+  const parsedUserId = parseInt(userId, 10);
+
+  if (isNaN(parsedUserId)) {
+    console.error('Invalid userId format:', userId);
+    return res.status(400).json({ error: 'Invalid userId format' });
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ 
+      where: { id: parsedUserId },
+      select: { id: true, gender: true }
+    });
+
+    console.log('User found:', user);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    let data;
+    if (user.gender === 'MALE') {
+      data = await prisma.maleMeasurement.findMany({ where: { userId: user.id } });
+    } else if (user.gender === 'FEMALE') {
+      data = await prisma.femaleMeasurement.findMany({ where: { userId: user.id } });
+    } else {
+      return res.status(400).json({ message: 'Invalid gender' });
+    }
+
+    console.log('Measurements found:', data);
+
+    return res.status(200).json({ message: 'Mesures récupérées avec succès', data });
+  } catch (error) {
+    console.error('Error in getMeasurementsbis:', error);
+    if (error instanceof Error) {
+      return res.status(500).json({ error: error.message });
+    }
+    return res.status(500).json({ error: 'Unknown error occurred' });
+  }
+};

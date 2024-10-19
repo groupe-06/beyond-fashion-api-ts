@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, getAllUsers, getUserById, deleteUser, updateUser, login, updateProfile, blockUser, unblockUser, logout, verifyValidityToken } from '../controllers/userController';
+import { register, getAllUsers, getUserById, deleteUser, updateUser, login, updateProfile, blockUser, unblockUser, logout, verifyValidityToken, getUserByIdBis } from '../controllers/userController';
 import { getToken, getTokenFromHeader } from '../middlewares/authMiddlewares';
 import  upload  from '../config/multer';
 import { getUserPosts } from '../controllers/postController';
@@ -11,6 +11,7 @@ const router = Router();
 router.post('/register', upload.single('photo'), register);
 router.get('/getAll', getToken, getAllUsers);
 router.get('/get-one', getToken, getUserById);
+router.get('/:userId', getUserByIdBis);
 router.put('/update', getToken, updateUser);
 router.delete('/delete/:id', deleteUser);
 router.post('/login', login);
