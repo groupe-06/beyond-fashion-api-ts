@@ -303,7 +303,7 @@ export const getUserPosts = async (req: Request, res: Response) => {
             // orderBy: { publishedAt: 'desc' },
         });
 
-        return res.status(200).json({ message: 'Posts retrieved successfully', ...posts });
+        return res.status(200).json({ message: 'Posts retrieved successfully', posts });
     } catch (error) {
         console.error('Error in getUserPosts:', error);
         return res.status(500).json({
@@ -341,10 +341,13 @@ export const getAllPosts = async (req: Request, res: Response) => {
                     },
                 },
             },
+            orderBy: {
+                publishedAt: 'desc', // Modif back
+            },
         });
 
 
-        return res.status(200).json({ message: 'Posts retrieved successfully', ...posts});
+        return res.status(200).json({ message: 'Posts retrieved successfully', posts});
     } catch (error) {
         console.error('Error in getAllPosts:', error);
         return res.status(500).json({
