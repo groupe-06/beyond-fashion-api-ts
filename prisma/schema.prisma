@@ -244,6 +244,8 @@ model Notification {
   postId     Int?
 
   @@map("notification")
+  @@index([receiverId])
+  @@index([emetorId])
 }
 
 model Favorite {
