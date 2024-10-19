@@ -1,6 +1,9 @@
 import prisma from '../database/db.config';
 
 async function sendNotification(receiverId: number, emetorId = null, content: string, type: string, postId = null) {
+    if(emetorId){
+        
+    }
     await prisma.notification.create({
         data: {
             receiverId: receiverId,
