@@ -62,7 +62,7 @@ export const reportPost = async (req: Request, res: Response) => {
 
         if (reportCount >3) {
             await deleteRelatedEntities(postId);
-            await sendNotification(post.authorId, 'Votre post a été supprimé en raison de multiples signalements.', "REPORT", postId);
+            await sendNotification(post.authorId, null, 'Votre post a été supprimé en raison de multiples signalements.', "REPORT", postId);
             await prisma.post.delete({
                 where: { id: postId }
             });
@@ -71,7 +71,7 @@ export const reportPost = async (req: Request, res: Response) => {
         
           
         else {
-            await sendNotification(post.authorId, `Votre post a été signalé pour la raison suivante : ${reason}`, "REPORT", postId);
+            await sendNotification(post.authorId, null, `Votre post a été signalé pour la raison suivante : ${reason}`, "REPORT", postId);
         }
         if (reportCount >= 1) {
             await sendReportWarningSms(post.authorId, postId);

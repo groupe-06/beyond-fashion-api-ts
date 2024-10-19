@@ -58,7 +58,7 @@ export const likePost = async (req: Request, res: Response) => {
         });
 
         
-        await sendNotification(post.authorId, `${user.firstname} ${user.lastname} vient d'aimer votre post. ${post.description ? post.description.substring(0, 30)+'...' : ''}`, "LIKE", postId);
+        await sendNotification(post.authorId, userId, `vient d'aimer votre post. ${post.description ? post.description.substring(0, 30)+'...' : ''}`, "LIKE", postId);
         return res.status(201).json({ message: "Post liked successfully." });
          
     } catch (error) {

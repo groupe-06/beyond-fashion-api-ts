@@ -50,7 +50,7 @@ export const followUser = async (req: Request, res: Response) => {
         following: { connect: { id: parseInt(followingId) } }
       }
     });
-    await sendNotification(userFollowing.id, `${userFollower.firstname} ${userFollower.lastname} vient de vous suivre`, "FOLLOW", followerId);
+    await sendNotification(userFollowing.id, followerId, 'vient de vous suivre', "FOLLOW");
     res.status(201).json({ message: 'Successfully followed the user', follow });
   } catch (error) {
     res.status(500).json({ message: 'Failed to follow user', error });

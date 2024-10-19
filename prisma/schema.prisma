@@ -1,6 +1,7 @@
 generator client {
   provider = "prisma-client-js"
 }
+
 // provider = "mysql"
 datasource db {
   provider = "postgresql"
@@ -16,38 +17,39 @@ model Role {
 }
 
 model User {
-  id                 Int                 @id @default(autoincrement())
-  email              String              @unique
-  password           String
-  roles              Role[]
-  lastname           String
-  firstname          String
-  address            String?
-  phoneNumber        String              @unique
-  gender             Gender
-  photoUrl           String?
-  credit             Int                 @default(0)
-  posts              Post[]
-  rates              Rate[]
-  comments           Comment[]
-  dislikes           PostDislike[]
-  likes              PostLike[]
-  followings         UserFollow[]        @relation("Followings")
-  followers          UserFollow[]        @relation("Followers")
-  reports            Report[]
-  sentMessages       Message[]           @relation("SenderMessages")
-  receivedMessages   Message[]           @relation("ReceiverMessages")
-  notifications      Notification[]      @relation("UserNotifications")
-  favorites          Favorite[]
-  userRecharges      Recharge[]          @relation("UserRecharges")
-  receivedRecharges  Recharge[]          @relation("ReceivedRecharges")
-  story              Story[]
-  femaleMeasurements FemaleMeasurement[]
-  maleMeasurements   MaleMeasurement[]
-  blocks             Block[]             @relation("UserBlocks")
-  blockedBy          Block[]             @relation("BlockedUsers")
-  articleByUser      Article[]
-  commandeByUser     Commande[]
+  id                  Int                 @id @default(autoincrement())
+  email               String              @unique
+  password            String
+  roles               Role[]
+  lastname            String
+  firstname           String
+  address             String?
+  phoneNumber         String              @unique
+  gender              Gender
+  photoUrl            String?
+  credit              Int                 @default(0)
+  posts               Post[]
+  rates               Rate[]
+  comments            Comment[]
+  dislikes            PostDislike[]
+  likes               PostLike[]
+  followings          UserFollow[]        @relation("Followings")
+  followers           UserFollow[]        @relation("Followers")
+  reports             Report[]
+  sentMessages        Message[]           @relation("SenderMessages")
+  receivedMessages    Message[]           @relation("ReceiverMessages")
+  notifications       Notification[]      @relation("UserNotifications")
+  emetorNotifications Notification[]      @relation("EmetorNotifications")
+  favorites           Favorite[]
+  userRecharges       Recharge[]          @relation("UserRecharges")
+  receivedRecharges   Recharge[]          @relation("ReceivedRecharges")
+  story               Story[]
+  femaleMeasurements  FemaleMeasurement[]
+  maleMeasurements    MaleMeasurement[]
+  blocks              Block[]             @relation("UserBlocks")
+  blockedBy           Block[]             @relation("BlockedUsers")
+  articleByUser       Article[]
+  commandeByUser      Commande[]
 
   @@map("user")
 }
@@ -233,12 +235,13 @@ model Notification {
   id         Int      @id @default(autoincrement())
   receiverId Int
   receiver   User     @relation("UserNotifications", fields: [receiverId], references: [id])
+  emetorId   Int?
+  emetor     User?    @relation("EmetorNotifications", fields: [emetorId], references: [id])
   content    String
   createdAt  DateTime @default(now())
   isRead     Boolean  @default(false)
   type       String
   postId     Int?
-  followerId Int?
 
   @@map("notification")
 }

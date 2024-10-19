@@ -164,7 +164,7 @@ export const deleteArticle = async (req: Request, res: Response) => {
 
                 // Send notifications and SMS to users who ordered this article
                 const user = commande.commande.user;
-                await sendNotification(user.id, `The article "${article.name}" you ordered has been deleted. Reason: ${reason}`);
+                await sendNotification(user.id, null, `The article "${article.name}" you ordered has been deleted. Reason: ${reason}`, "ARTICLE");
                 await sendSMS(user.phoneNumber, `Dear ${user.firstname}, the article "${article.name}" you ordered has been deleted. Reason: ${reason}`);
             }
         }
