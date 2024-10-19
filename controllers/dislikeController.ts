@@ -44,7 +44,7 @@ export const dislikePost = async (req: Request, res: Response) => {
         });
 
         // Send a notification to the post author
-        await sendNotification(post.authorId, `Your post has been disliked.`);
+        //await sendNotification(post.authorId, `Your post has been disliked.`);
 
         res.status(201).json({ message: "Post disliked successfully." });
 

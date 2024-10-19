@@ -6,7 +6,6 @@ import { sendMail, sendSMS } from '../utils/utils';
 
 export const createPost = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
-    console.log(userId);
     const { content, description, tags } = req.body;
     const file = req.file;
 

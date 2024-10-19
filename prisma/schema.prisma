@@ -1,7 +1,7 @@
 generator client {
   provider = "prisma-client-js"
 }
-//provider = "mysql"
+// provider = "mysql"
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -145,9 +145,9 @@ model Category {
 }
 
 model Unit {
-  id         Int        @id @default(autoincrement())
-  name       String
-  categories Category[]
+  id                  Int          @id @default(autoincrement())
+  name                String
+  categories          Category[]
   conversionFromUnits Conversion[] @relation("ConversionFromUnits")
   conversiontoUnits   Conversion[] @relation("ConversiontoUnits")
 
@@ -167,7 +167,7 @@ model Conversion {
 
 model Rate {
   id          Int      @id @default(autoincrement())
-  stars       Float    
+  stars       Float
   description String?  @db.VarChar(800)
   postId      Int
   post        Post     @relation(fields: [postId], references: [id])
@@ -236,6 +236,9 @@ model Notification {
   content    String
   createdAt  DateTime @default(now())
   isRead     Boolean  @default(false)
+  type       String
+  postId     Int?
+  followerId Int?
 
   @@map("notification")
 }
@@ -348,7 +351,8 @@ model CommandeArticle {
 }
 
 model BlackListToken {
-  id           Int      @id @default(autoincrement())
-  token        String   @unique
+  id    Int    @id @default(autoincrement())
+  token String @unique
+
   @@map("blacklist_token")
 }

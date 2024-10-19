@@ -4,15 +4,15 @@
   "main": "app.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx prisma migrate deploy && ts-node-dev --respawn --transpile-only app.ts",
-    "dev-seed": "npx prisma migrate deploy && ts-node-dev --respawn --transpile-only seed.ts",
+    "dev": "ts-node-dev --respawn --transpile-only app.ts",
+    "dev-seed": "ts-node-dev --respawn --transpile-only seed.ts",
     "build": "tsc"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@prisma/client": "^5.18.0",
+    "@prisma/client": "^5.21.1",
     "@vinejs/vine": "^2.1.0",
     "arg": "^5.0.2",
     "axios": "^1.7.4",

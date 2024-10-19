@@ -82,10 +82,10 @@ export const createComment = async (req: Request, res: Response) => {
     });
 
     if (parentComment) {
-      await sendNotification(post.author.id, `${user.firstname} ${user.lastname} vient de commenter votre post ${content.substring(0, 30)}...`);
-      await sendNotification(parentComment.authorId, `${user.firstname} ${user.lastname} a repondu à votre commenteraire ${content.substring(0, 30)}...`);
+      await sendNotification(post.author.id, `${user.firstname} ${user.lastname} vient de commenter votre post. ${content.substring(0, 30)}...`, "COMMENT", postId);
+      await sendNotification(parentComment.authorId, `${user.firstname} ${user.lastname} a repondu à votre commenteraire. ${content.substring(0, 30)}...`, "COMMENT", postId);
     } else {
-      await sendNotification(post.authorId, `${user.firstname} ${user.lastname} vient de commenter votre post ${content.substring(0, 30)}...`);
+      await sendNotification(post.authorId, `${user.firstname} ${user.lastname} vient de commenter votre post ${content.substring(0, 30)}...`, "COMMENT", postId);
     }
 
     res.status(201).json({ message: 'Comment created successfully', comment });

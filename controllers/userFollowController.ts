@@ -1,13 +1,34 @@
 import { Request, Response } from 'express';
 import prisma from '../database/db.config';
+import sendNotification from './notificationController';
 
 export const followUser = async (req: Request, res: Response) => {
-  const followerId = (req as any).userId;//le any c'est pour acceder directement aux userid 
-  const { followingId } = req.params;
+  const followerId = (req as any).userId; // le suiveur(celui qui suit)
+  const { followingId } = req.params; // le suivi(celui qu'on est entrain de suivre)
 
   try {
     if (!followerId) {
-      return res.status(401).json({ message: 'You are not authorized to follow users.' });
+      return res.status(401).json({ message: 'UserId from token not found' });
+    }
+
+    const userFollower = await prisma.user.findUnique({
+      where: {id: followerId}
+    });
+
+    if(!userFollower){
+      return res.status(404).json({ message: `User with ID ${followerId} not found` });
+    }
+
+    if(!followingId){
+      return res.status(404).json({ message: "User(Follower) following ID not present"});
+    }
+
+    const userFollowing = await prisma.user.findUnique({
+      where: {id: parseInt(followingId)}
+    });
+
+    if(!userFollowing){
+      return res.status(404).json({ message: `User(Following) with ID ${followingId} not found` });
     }
 
     // Vérifier si l'utilisateur n'est pas déjà dans la liste des followings
@@ -19,7 +40,7 @@ export const followUser = async (req: Request, res: Response) => {
     });
 
     if (existingFollow) {
-      return res.status(400).json({ message: 'You are already followingggggggggggggggg this user.' });
+      return res.status(400).json({ message: 'You are already following this user.' });
     }
 
     // Créer la relation de suivi (d'abonnements)
@@ -29,7 +50,7 @@ export const followUser = async (req: Request, res: Response) => {
         following: { connect: { id: parseInt(followingId) } }
       }
     });
-
+    await sendNotification(userFollowing.id, `${userFollower.firstname} ${userFollower.lastname} vient de vous suivre`, "FOLLOW", followerId);
     res.status(201).json({ message: 'Successfully followed the user', follow });
   } catch (error) {
     res.status(500).json({ message: 'Failed to follow user', error });
