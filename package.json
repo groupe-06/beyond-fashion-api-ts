@@ -4,8 +4,8 @@
   "main": "app.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node-dev --respawn --transpile-only app.ts",
-    "dev-seed": "ts-node-dev --respawn --transpile-only seed.ts",
+    "dev": "npx prisma migrate dev --name fix_notification_relations && npx prisma generate && ts-node-dev --respawn --transpile-only app.ts",
+    "dev-seed": "npx prisma migrate dev --name fix_notification_relations && npx prisma generate && ts-node-dev --respawn --transpile-only seed.ts",
     "build": "tsc"
   },
   "author": "",
