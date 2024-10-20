@@ -20,21 +20,28 @@ export const createMessage = async (req: Request, res: Response) => {
 };
 
 export const getMessages = async (req: Request, res: Response) => {
-  try{
+  try {
+    const userId = (req as any).userId;
+    const { receiverId } = req.query;
+
+    if (!receiverId) {
+      return res.status(400).json({ message: 'receiverId is required', status: false });
+    }
+
     const messages = await prisma.message.findMany({
       where: {
         OR: [
-          {
-            senderId: (req as any).userId
-          },
-          {
-            receiverId: (req as any).userId
-          }
+          { AND: [{ senderId: userId }, { receiverId: Number(receiverId) }] },
+          { AND: [{ senderId: Number(receiverId) }, { receiverId: userId }] }
         ]
+      },
+      orderBy: {
+        createdAt: 'asc'
       }
     });
+
     return res.status(200).json({ message: 'Messages fetched successfully', messages, status: true });
-  }catch(error){
+  } catch (error) {
     return res.status(500).json({ message: 'Error fetching messages', error, status: false });
   }
 };

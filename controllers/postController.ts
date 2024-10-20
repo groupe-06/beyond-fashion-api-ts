@@ -264,26 +264,33 @@ export const deletePost = async (req: Request, res: Response) => {
 
 
 export const getUserPosts = async (req: Request, res: Response) => {
-    const userId = (req as any).userId;
+    // Récupérer userId soit des paramètres de la requête, soit du token
+    const userId = req.params.userId || (req as any).userId;
 
     try {
         if (!userId) {
-            return res.status(401).json({ message: 'User not found!' });
+            return res.status(401).json({ message: 'User ID is required!' });
+        }
+
+        // Convertir userId en un entier si nécessaire
+        const userIdInt = parseInt(userId, 10);
+        if (isNaN(userIdInt)) {
+            return res.status(400).json({ message: 'Invalid User ID format!' });
         }
 
         // Récupérer l'utilisateur pour vérifier son existence
         const user = await prisma.user.findUnique({
-            where: { id: userId },
-            include: { roles: true}
+            where: { id: userIdInt },
+            include: { roles: true }
         });
 
         if (!user) {
-            return res.status(404).json({ message: `User with ID ${userId} not found!` });
+            return res.status(404).json({ message: `User with ID ${userIdInt} not found!` });
         }
 
-        // Récupérer tous les posts de l'utilisateur connecté
+        // Récupérer tous les posts de l'utilisateur
         const posts = await prisma.post.findMany({
-            where: { authorId: userId },
+            where: { authorId: userIdInt },
             include: {
                 tag: true,
                 comments: true,
@@ -311,7 +318,6 @@ export const getUserPosts = async (req: Request, res: Response) => {
         });
     }
 };
-
 
 export const getAllPosts = async (req: Request, res: Response) => {
     try {

@@ -14,6 +14,7 @@ router.put('/update/:id', getToken,validatePostRequest, updatePost);
 router.delete('/delete/:id', getToken, deletePost);
 router.get('/get-post',getToken, getUserPosts);
 router.get('/getAllPost',getToken, getAllPosts);
+router.get('/get-post/:userId', getUserPosts);
 
 
 
