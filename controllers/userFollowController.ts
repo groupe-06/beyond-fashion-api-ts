@@ -135,3 +135,31 @@ export const getFollowedUsers = async (req: Request, res: Response) => {
   }
 };
 
+export const getFollowedUsersbis = async (req: Request, res: Response) => {
+  const followerId = parseInt(req.params.userId); // Conversion en nombre
+
+  try {
+    if (!followerId) {
+      return res.status(401).json({ message: 'Unauthorized access.' });
+    }
+
+    // Récupérer les utilisateurs suivis par l'utilisateur connecté
+    const followedUsers = await prisma.user.findMany({
+      where: {
+        followings: {
+          some: {
+            followerId: followerId, // Utilisez followerId pour trouver les suivis
+          }
+        }
+      },
+      include: {
+        roles: true, // Inclure les rôles si nécessaire
+      }
+    });
+
+    res.status(200).json({ users: followedUsers });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch followed users.', error });
+  }
+};
+

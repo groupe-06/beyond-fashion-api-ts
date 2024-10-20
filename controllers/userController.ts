@@ -129,6 +129,24 @@ export const getUserById = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Failed to fetch user', error });
     }
 };
+export const getUserByIdBis = async (req: Request, res: Response) => {
+    const { userId } = req.params;  // Retrieve userId from URL parameters
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: Number(userId) },
+            include: {
+                roles: true,  // Include roles or any related data
+            }
+        });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        return res.json({ message: 'User fetched successfully', user });
+    } catch (error) {
+        return res.status(500).json({ message: 'Failed to fetch user', error });
+    }
+};
+
 
 export const updateUser = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
