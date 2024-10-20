@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, getAllUsers, getUserById, deleteUser, updateUser, login, updateProfile, blockUser, unblockUser, logout, verifyValidityToken, getUserByIdBis } from '../controllers/userController';
+import { register, getAllUsers, getUserById, deleteUser, updateUser, login, updateProfile, blockUser, unblockUser, logout, verifyValidityToken, getUserByIdBis, getUserNotifications } from '../controllers/userController';
 import { getToken, getTokenFromHeader } from '../middlewares/authMiddlewares';
 import  upload  from '../config/multer';
 import { getUserPosts } from '../controllers/postController';
@@ -22,6 +22,9 @@ router.post('/unblock/:deblockedId',getToken, unblockUser);
 router.get('/get-post',getToken, getUserPosts);
 router.get('/logout', getTokenFromHeader, logout);
 router.post('/verify', verifyValidityToken);
+
+//Notifications
+router.get('/notifications', getToken, getUserNotifications);
 
 
 

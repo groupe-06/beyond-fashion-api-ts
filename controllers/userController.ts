@@ -426,3 +426,64 @@ export const logout = async (req: Request, res: Response) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+export const getUserNotifications = async (req: Request, res: Response) => {
+    try{
+        const userId = (req as any).userId;
+        console.log(userId);
+        const {type} = req.query;
+
+        if(!userId){
+            return res.status(401).json({ message: 'userId from token not found' });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: Number(userId) }
+        });
+
+        if(!user){
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        let notificationType = type ? (type as string).toUpperCase() : null;
+
+        const existingTypes = ['MESSAGE', 'FOLLOW', 'LIKE', 'COMMENT', 'REPORT'];
+        if (notificationType && !existingTypes.includes(notificationType)) {
+            return res.status(400).json({ message: 'Invalid notification type' });
+        }
+
+        const whereClause: any = {
+            receiverId: Number(userId),
+        };
+
+        if (notificationType) {
+            whereClause.type = notificationType;
+        }
+
+        whereClause.emetor = {
+            isNot: null, // Assure que emetor n'est pas null
+        };
+
+        const notifications = await prisma.notification.findMany({
+            where: whereClause,
+            include: {
+                emetor: {
+                    select: {
+                        id: true,
+                        firstname: true,
+                        lastname: true,
+                        photoUrl: true
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        
+        return res.status(200).json({ message: 'All notifications fetched successfully', notifications });
+
+    }catch (error) {
+        console.error('Get all notifications error:', error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
