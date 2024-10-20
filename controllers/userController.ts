@@ -443,9 +443,7 @@ export const logout = async (req: Request, res: Response) => {
 
 export const getUserNotifications = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
-    console.log(userId);
     try{
-        console.log(userId);
         const {type} = req.query;
 
         if(!userId){
