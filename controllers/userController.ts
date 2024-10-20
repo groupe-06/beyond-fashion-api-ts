@@ -112,38 +112,52 @@ export const getAllUsers = async (req: Request, res: Response) => {
     }
 };
 
-export const getUserById = async (req: Request, res: Response) => {
-    const userId = (req as any).userId;
+export const getUser = async (req: Request, res: Response) => {
     try {
+        // Tente d'abord de récupérer l'ID depuis le token
+        let userId = (req as any).userId;
+        
+        // Si pas d'ID dans le token, essaie les paramètres d'URL
+        if (!userId && req.params.userId) {
+            userId = parseInt(req.params.userId);
+        }
+
+        if (!userId) {
+            return res.status(401).json({ 
+                message: 'User ID not found in token or parameters' 
+            });
+        }
+
         const user = await prisma.user.findUnique({
-            where: { id: +userId },
+            where: { 
+                id: Number(userId) 
+            },
             include: {
                 roles: true,
+                // Ajoutez ici d'autres relations si nécessaire
             }
         });
+
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ 
+                message: 'User not found' 
+            });
         }
-        res.json({ message: 'User fetched successfully', user });
-    } catch (error) {
-        res.status(500).json({ message: 'Failed to fetch user', error });
-    }
-};
-export const getUserByIdBis = async (req: Request, res: Response) => {
-    const { userId } = req.params;  // Retrieve userId from URL parameters
-    try {
-        const user = await prisma.user.findUnique({
-            where: { id: Number(userId) },
-            include: {
-                roles: true,  // Include roles or any related data
-            }
+
+        return res.status(200).json({ 
+            message: 'User fetched successfully', 
+            user 
         });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        return res.json({ message: 'User fetched successfully', user });
+
     } catch (error) {
-        return res.status(500).json({ message: 'Failed to fetch user', error });
+        console.error('Get user error:', error);
+        return res.status(500).json({
+            message: 'Failed to fetch user',
+            error: error instanceof Error ? {
+                name: error.name,
+                message: error.message
+            } : 'Unknown error'
+        });
     }
 };
 
@@ -428,8 +442,9 @@ export const logout = async (req: Request, res: Response) => {
 };
 
 export const getUserNotifications = async (req: Request, res: Response) => {
+    const userId = (req as any).userId;
+    console.log(userId);
     try{
-        const userId = (req as any).userId;
         console.log(userId);
         const {type} = req.query;
 
@@ -454,16 +469,14 @@ export const getUserNotifications = async (req: Request, res: Response) => {
 
         const whereClause: any = {
             receiverId: Number(userId),
+            emetorId: {
+                not: null
+            }
         };
 
         if (notificationType) {
             whereClause.type = notificationType;
         }
-
-        whereClause.emetor = {
-            isNot: null, // Assure que emetor n'est pas null
-        };
-
         const notifications = await prisma.notification.findMany({
             where: whereClause,
             include: {
@@ -483,7 +496,13 @@ export const getUserNotifications = async (req: Request, res: Response) => {
         return res.status(200).json({ message: 'All notifications fetched successfully', notifications });
 
     }catch (error) {
-        console.error('Get all notifications error:', error);
-        return res.status(500).json({ message: 'Internal server error' });
+        console.error('Get notifications error:', error);
+        return res.status(500).json({
+            message: 'Failed to fetch notifications',
+            error: error instanceof Error ? {
+                name: error.name,
+                message: error.message
+            } : 'Unknown error'
+        });
     }
 }
