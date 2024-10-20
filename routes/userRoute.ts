@@ -9,7 +9,7 @@ import { getUserPosts } from '../controllers/postController';
 const router = Router();
 
 router.post('/register', upload.single('photo'), register);
-router.get('/getAll', getToken, getAllUsers);
+router.get('/getAll', getAllUsers);
 //Notifications
 router.get('/notifications', getToken, getUserNotifications);
 router.get('/get-one', getToken, getUser);
