@@ -12,7 +12,7 @@ router.post('/register', upload.single('photo'), register);
 router.get('/getAll', getToken, getAllUsers);
 //Notifications
 router.get('/notifications', getToken, getUserNotifications);
-router.get('/get-one/:userId', getToken, getUser);
+router.get('/get-one', getToken, getUser);
 router.put('/update', getToken, updateUser);
 router.delete('/delete/:id', deleteUser);
 router.post('/login', login);
