@@ -12,7 +12,9 @@ export const rechargeAmount = async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'userId from token not found' });
         }
 
-        const parsedAmount = parseInt(amount);
+        const parsedAmount = Number(amount);
+
+        console.log(amount);
 
         const user = await prisma.user.findUnique({
             where: { id: userId },
@@ -80,7 +82,7 @@ export const rechargeAmount = async (req: Request, res: Response) => {
         });
         sendMail(user.email, 'Beyound fashion recharge', `Félicitations votre achat de recharge est effectué avec succes. Votre code de rechargement est : ${recharge.code}`);
         sendSMS(user.phoneNumber, `Félicitations votre achat de recharge est effectué avec succes. Votre code de rechargement est : ${recharge.code}`);
-        return res.status(201).json({ message: 'Recharge created successfully', recharge });
+        return res.status(201).json({ message: 'Recharge created successfully', ...recharge, code: recharge.code.toString() });
     } catch (error) {
         console.error('Error recharging credit:', error);
         return res.status(500).json({ message: 'Internal server error' });
