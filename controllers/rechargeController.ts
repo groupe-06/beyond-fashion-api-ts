@@ -12,6 +12,8 @@ export const rechargeAmount = async (req: Request, res: Response) => {
             return res.status(401).json({ message: 'userId from token not found' });
         }
 
+        const parsedAmount = parseInt(amount);
+
         const user = await prisma.user.findUnique({
             where: { id: userId },
             include: { roles: true },
@@ -27,7 +29,7 @@ export const rechargeAmount = async (req: Request, res: Response) => {
             return res.status(403).json({ message: 'Only tailors can do this action' });
         }
 
-        if(!amount){
+        if(!parsedAmount){
             return res.status(400).json({ message: 'Amount is required' });
         }
 
@@ -37,8 +39,8 @@ export const rechargeAmount = async (req: Request, res: Response) => {
             return res.status(500).json({ message: 'Failed to generate code' });
         }
 
-        if(amount < 100 || amount > 1000){
-            return res.status(400).json({ message: 'Amount must be between 100 and 1000' });
+        if(parsedAmount < 100 || parsedAmount > 2000){
+            return res.status(400).json({ message: 'Amount must be between 100 and 2000' });
         }
 
         if(receiverEmail){
@@ -59,7 +61,7 @@ export const rechargeAmount = async (req: Request, res: Response) => {
                 data: {
                     userId,
                     receiverId: receiver.id,
-                    amount: Number(amount),
+                    amount: parsedAmount,
                     code: BigInt(code),
                 },
             });
@@ -72,7 +74,7 @@ export const rechargeAmount = async (req: Request, res: Response) => {
         const recharge = await prisma.recharge.create({
             data: {
                 userId: userId,
-                amount: Number(amount),
+                amount: parsedAmount,
                 code: Number(code), // Implement a function to generate a unique code
             },
         });
@@ -183,24 +185,18 @@ function recharging(amount: number): number {
     switch(amount){
         case 100:
             return 10;
-        case 200:
-            return 14;
         case 300:
-            return 18;
-        case 400:
-            return 22;
+            return 32;
         case 500:
-            return 26;
-        case 600:
-           return 30;
-        case 700:
-            return 34;
-        case 800:
-            return 38;
-        case 900:
-            return 42;
+            return 52;
         case 1000:
-            return 46;
+            return 104;
+        case 1200:
+            return 128;
+        case 1500:
+            return 160;
+        case 2000:
+           return 210;
         default:
             return 0;
     }
