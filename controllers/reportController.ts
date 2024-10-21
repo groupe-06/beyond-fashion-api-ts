@@ -33,9 +33,9 @@ export const reportPost = async (req: Request, res: Response) => {
             return res.status(404).json({ message: 'Le post que vous essayez de signaler n\'existe pas.' });
         }
 
-        //  if (post.authorId === userId) {
-        //     return res.status(400).json({ message: 'Vous ne pouvez pas signaler votre propre post.' });
-        // }  
+         if (post.authorId === userId) {
+            return res.status(400).json({ message: 'Vous ne pouvez pas signaler votre propre post.' });
+        }  
   
          const existingReport = await prisma.report.findFirst({
             where: {
@@ -44,9 +44,9 @@ export const reportPost = async (req: Request, res: Response) => {
             }
         });
  
-    //    if (existingReport) {
-    //         return res.status(400).json({ message: 'Vous avez déjà signalé ce post.' });
-    //     }  
+       if (existingReport) {
+            return res.status(400).json({ message: 'Vous avez déjà signalé ce post.' });
+        }  
  
         await prisma.report.create({
             data: {
