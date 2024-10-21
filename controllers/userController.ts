@@ -111,7 +111,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Failed to fetch users', error });
     }
 };
-export const getAllUsersbis = async (req: Request, res: Response) => {
+export const getAllUsersForMessage = async (req: Request, res: Response) => {
     try {
         const currentUserId = (req as any).userId;
         const users = await prisma.user.findMany({
@@ -154,7 +154,7 @@ export const getAllUsersbis = async (req: Request, res: Response) => {
             };
         }));
 
-        res.json({ message: 'Users fetched successfully', users: usersWithLastMessage });
+        return res.json({ message: 'Users fetched successfully', users: usersWithLastMessage });
     } catch (error) {
         res.status(500).json({ message: 'Failed to fetch users', error });
     }
