@@ -82,7 +82,8 @@ export const rechargeAmount = async (req: Request, res: Response) => {
         });
         sendMail(user.email, 'Beyound fashion recharge', `Félicitations votre achat de recharge est effectué avec succes. Votre code de rechargement est : ${recharge.code}`);
         sendSMS(user.phoneNumber, `Félicitations votre achat de recharge est effectué avec succes. Votre code de rechargement est : ${recharge.code}`);
-        return res.status(201).json({ message: 'Recharge created successfully', ...recharge, code: recharge.code.toString() });
+        const data = {...recharge, code: recharge.code.toString()};
+        return res.status(201).json({ message: 'Recharge created successfully', data });
     } catch (error) {
         console.error('Error recharging credit:', error);
         return res.status(500).json({ message: 'Internal server error' });
@@ -165,7 +166,7 @@ export const creditRecharge = async (req: Request, res: Response) => {
                 data: { isUsed: true },
             });
             
-            return res.status(201).json({ message: `Credit recharge successful. Your new credit is now ${user.credit}` });
+            return res.status(201).json({ message: `Credit recharge successful. Your new credit is now ${user.credit}`, credit: user.credit });
         }
 
         const credit = recharging(recharge.amount);
@@ -177,7 +178,8 @@ export const creditRecharge = async (req: Request, res: Response) => {
             where: { id: recharge.id },
             data: { isUsed: true },
         });
-        return res.status(201).json({ message: `Credit recharge successful. Your new credit is now ${modifiedUser.credit}` });
+       
+        return res.status(201).json({ message: `Credit recharge successful. Your new credit is now ${modifiedUser.credit}`, credit: modifiedUser.credit });
     }catch(error) {
         return res.status(500).json({ message: 'Failed to recharge credit', error });
     }
