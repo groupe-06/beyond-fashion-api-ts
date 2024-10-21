@@ -155,31 +155,35 @@ export const creditRecharge = async (req: Request, res: Response) => {
                 return res.status(403).json({ message: 'This recharge is not yours' });
             }
 
-            const credit = recharging(recharge.amount);
+            const creditRecharge = recharging(recharge.amount);
             const user = await prisma.user.update({
                 where: { id: userId },
-                data: { credit: { increment: credit } },
+                data: { credit: { increment: creditRecharge } },
             });
 
             await prisma.recharge.update({
                 where: { id: recharge.id },
                 data: { isUsed: true },
             });
+
+            const credit = user.credit;
             
-            return res.status(201).json({ message: `Credit recharge successful. Your new credit is now ${user.credit}`, credit: user.credit });
+            return res.status(201).json({ message: `Credit recharge successful. Your new credit is now ${user.credit}`, credit });
         }
 
-        const credit = recharging(recharge.amount);
+        const creditRecharge = recharging(recharge.amount);
         const modifiedUser = await prisma.user.update({
             where: { id: userId },
-            data: { credit: { increment: credit } },
+            data: { credit: { increment: creditRecharge } },
         });
         await prisma.recharge.update({
             where: { id: recharge.id },
             data: { isUsed: true },
         });
+
+        const credit = modifiedUser.credit
        
-        return res.status(201).json({ message: `Credit recharge successful. Your new credit is now ${modifiedUser.credit}`, credit: modifiedUser.credit });
+        return res.status(201).json({ message: `Credit recharge successful. Your new credit is now ${modifiedUser.credit}`, credit });
     }catch(error) {
         return res.status(500).json({ message: 'Failed to recharge credit', error });
     }
