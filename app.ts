@@ -22,6 +22,7 @@ import tagRoute from './routes/tagRoute'; // Importez votre route
 import commandeRouter from './routes/commandeRoute'
 import searchRoute from './routes/searchRoute';
 import conversionRoute from './routes/conversionRoute';
+import shareRoute from './routes/shareRoute';
 import 'dotenv/config'; // Import articleCommande route
 import cors from 'cors'; 
 const app = express();
@@ -57,6 +58,7 @@ app.use(`${uri}/units`, unitRouter);
 app.use(`${uri}/tags`, tagRoute);
 app.use(`${uri}/search`, searchRoute);
 app.use(`${uri}/conversions`, conversionRoute);
+app.use(`${uri}/`, shareRoute);
 
 
 const server = http.createServer(app);

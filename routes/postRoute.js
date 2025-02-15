@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const postController_1 = require("../controllers/postController");
+const authMiddlewares_1 = require("../middlewares/authMiddlewares");
+const shemaValidator_1 = require("../middlewares/shemaValidator");
+const multer_1 = __importDefault(require("../config/multer"));
+const postController_2 = require("../controllers/postController");
+const postController_3 = require("../controllers/postController");
+const router = (0, express_1.Router)();
+router.post('/create', authMiddlewares_1.getToken, multer_1.default.single('file'), postController_1.createPost);
+router.put('/update/:id', authMiddlewares_1.getToken, shemaValidator_1.validatePostRequest, postController_1.updatePost);
+router.delete('/delete/:id', authMiddlewares_1.getToken, postController_1.deletePost);
+router.get('/get-post', authMiddlewares_1.getToken, postController_2.getUserPosts);
+router.get('/getAllPost', authMiddlewares_1.getToken, postController_3.getAllPosts);
+router.get('/get-post/:userId', postController_2.getUserPosts);
+exports.default = router;

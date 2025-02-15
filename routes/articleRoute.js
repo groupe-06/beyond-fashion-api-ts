@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const articleController_1 = require("../controllers/articleController");
+const tokenMiddleware_1 = require("../middlewares/tokenMiddleware");
+const router = (0, express_1.Router)();
+router.post('/', tokenMiddleware_1.verifyToken, articleController_1.createArticle);
+router.put('/:articleId', tokenMiddleware_1.verifyToken, articleController_1.updateArticle);
+router.delete('/:articleId', tokenMiddleware_1.verifyToken, articleController_1.deleteArticle);
+exports.default = router;
