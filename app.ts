@@ -28,7 +28,7 @@ import cors from 'cors';
 const app = express();
 
 app.use(cors({
-    origin: ["http://localhost:3000", "http://localhost:3000", "https://beyond-fashion-api-ts-wzdg.onrender.com"],
+    origin: ["http://localhost:8000", "http://localhost:3000", "https://beyond-fashion-api-ts-wzdg.onrender.com"],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Origin, X-Requested-With, Content, Accept, Content-Type, Authorization']
   }));
