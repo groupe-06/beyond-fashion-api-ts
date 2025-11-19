@@ -32,7 +32,7 @@ require("dotenv/config"); // Import articleCommande route
 const cors_1 = __importDefault(require("cors"));
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
-    origin: ["http://localhost:8000", "http://localhost:3000", "https://beyond-fashion-api-ts-wzdg.onrender.com", "https://threadline-front.vercel.app"],
+    origin: ["http://localhost:8000", "http://localhost:3000", "https://beyond-fashion-api-ts-8ruc.onrender.com", "https://threadline-front.onrender.com"],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Origin, X-Requested-With, Content, Accept, Content-Type, Authorization']
 }));
