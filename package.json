@@ -1,9 +1,10 @@
 {
   "name": "beyound-fashion-api-ts",
   "version": "1.0.0",
-  "main": "app.ts",
+  "main": "dist/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node dist/app.js",
     "dev": "npx prisma migrate dev --name fix_notification_relations && npx prisma generate && ts-node-dev --respawn --transpile-only app.ts",
     "dev-seed": "npx prisma migrate dev --name fix_notification_relations && npx prisma generate && ts-node-dev --respawn --transpile-only seed.ts",
     "build": "tsc"

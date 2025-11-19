@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const measurementController_1 = require("../controllers/measurementController");
+const authMiddlewares_1 = require("../middlewares/authMiddlewares");
+const router = (0, express_1.Router)();
+router.post('/add', authMiddlewares_1.getToken, measurementController_1.addMeasurement);
+router.put('/update/:id', authMiddlewares_1.getToken, measurementController_1.updateMeasurement);
+router.delete('/delete/:id', authMiddlewares_1.getToken, measurementController_1.deleteMeasurement);
+router.get('/all', authMiddlewares_1.getToken, measurementController_1.getMeasurements);
+router.get('/:userId', measurementController_1.getMeasurementsbis);
+exports.default = router;

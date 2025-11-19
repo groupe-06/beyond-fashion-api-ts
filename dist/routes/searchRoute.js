@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const searchController_1 = require("../controllers/searchController");
+const authMiddlewares_1 = require("../middlewares/authMiddlewares");
+const router = (0, express_1.Router)();
+router.get('/post-by-tag/:tagName', authMiddlewares_1.getToken, searchController_1.searchPostsByTag);
+router.get('/article-by-letters/:letter', authMiddlewares_1.getToken, searchController_1.searchArticlesByFirstLetter);
+router.get('/article-by-seller/:sellerId', authMiddlewares_1.getToken, searchController_1.searchSellerAndArticles);
+router.get('/article-by-category/:categoryName', authMiddlewares_1.getToken, searchController_1.searchArticlesByCategory);
+router.get('/article-by-tag/:tagName', authMiddlewares_1.getToken, searchController_1.searchArticlesByTag);
+exports.default = router;

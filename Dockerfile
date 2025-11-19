@@ -7,8 +7,8 @@ WORKDIR /app
 # Étape 3: Copier les fichiers package.json et package-lock.json
 COPY package.json package-lock.json ./
 
-# Étape 4: Installer les dépendances de production
-RUN npm install --omit=dev
+# Étape 4: Installer toutes les dépendances (y compris devDependencies pour le build)
+RUN npm install
 
 # Étape 5: Copier tous les fichiers du projet
 COPY . .
@@ -20,4 +20,4 @@ RUN npm run build
 EXPOSE 8000
 
 # Étape 8: Démarrer l'application
-CMD ["node", "app.js"]
+CMD ["node", "dist/app.js"]
