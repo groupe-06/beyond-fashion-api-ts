@@ -25,6 +25,7 @@ import conversionRoute from './routes/conversionRoute';
 import shareRoute from './routes/shareRoute';
 import 'dotenv/config'; // Import articleCommande route
 import cors from 'cors';
+import { setupSwagger } from './config/swagger';
 const app = express();
 
 app.use(cors({
@@ -37,6 +38,10 @@ const PORT = process.env.PORT || 3000;
 const uri = process.env.URI;
 
 app.use(express.json());
+
+// Setup Swagger Documentation
+setupSwagger(app);
+
 app.use(`${uri}/roles`, roleRoute);
 app.use(`${uri}/users`, userRoute);
 app.use(`${uri}/users`, commandeRouter);

@@ -30,6 +30,7 @@ const conversionRoute_1 = __importDefault(require("./routes/conversionRoute"));
 const shareRoute_1 = __importDefault(require("./routes/shareRoute"));
 require("dotenv/config"); // Import articleCommande route
 const cors_1 = __importDefault(require("cors"));
+const swagger_1 = require("./config/swagger");
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
     origin: ["http://localhost:8000", "http://localhost:3000", "https://beyond-fashion-api-ts-8ruc.onrender.com", "https://threadline-front.onrender.com"],
@@ -39,6 +40,8 @@ app.use((0, cors_1.default)({
 const PORT = process.env.PORT || 3000;
 const uri = process.env.URI;
 app.use(express_1.default.json());
+// Setup Swagger Documentation
+(0, swagger_1.setupSwagger)(app);
 app.use(`${uri}/roles`, roleRoute_1.default);
 app.use(`${uri}/users`, userRoute_1.default);
 app.use(`${uri}/users`, commandeRoute_1.default);
