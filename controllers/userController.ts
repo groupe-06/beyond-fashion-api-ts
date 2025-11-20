@@ -8,8 +8,8 @@ import jwt from 'jsonwebtoken';
 export const register = async (req: Request, res: Response) => {
     try {
         let { email, password, lastname, firstname, phoneNumber, address, gender, confirm_password } = req.body;
-        const file = req.file; 
-        
+        const file = req.file;
+
         email = email?.trim().toLowerCase();
         password = password?.trim();
         confirm_password = confirm_password?.trim();
@@ -50,17 +50,17 @@ export const register = async (req: Request, res: Response) => {
                         else resolve(result);
                     }
                 );
-                uploadStream.end(file.buffer);  
+                uploadStream.end(file.buffer);
             });
             photoUrl = (media as any).secure_url;
         }
 
         const user = await prisma.user.create({
-            data: { 
-                email, 
-                password: hashedPassword, 
-                lastname, 
-                firstname, 
+            data: {
+                email,
+                password: hashedPassword,
+                lastname,
+                firstname,
                 phoneNumber,
                 address,
                 gender,
@@ -94,9 +94,9 @@ export const login = async (req: Request, res: Response) => {
         }
         const token = await generateToken(user);
 
-        const {password: _, ...userWithoutPassword} = user;
-        const data = {...userWithoutPassword, token};        
-        
+        const { password: _, ...userWithoutPassword } = user;
+        const data = { ...userWithoutPassword, token };
+
         return res.status(200).json({ message: 'User Logged in successfully', data });
     } catch (error) {
         return res.status(500).json({ message: 'Failed to login', error });
@@ -116,21 +116,21 @@ export const getUser = async (req: Request, res: Response) => {
     try {
         // Tente d'abord de récupérer l'ID depuis le token
         let userId = (req as any).userId;
-        
+
         // Si pas d'ID dans le token, essaie les paramètres d'URL
         if (!userId && req.params.userId) {
             userId = parseInt(req.params.userId);
         }
 
         if (!userId) {
-            return res.status(401).json({ 
-                message: 'User ID not found in token or parameters' 
+            return res.status(401).json({
+                message: 'User ID not found in token or parameters'
             });
         }
 
         const user = await prisma.user.findUnique({
-            where: { 
-                id: Number(userId) 
+            where: {
+                id: Number(userId)
             },
             include: {
                 roles: true,
@@ -139,14 +139,14 @@ export const getUser = async (req: Request, res: Response) => {
         });
 
         if (!user) {
-            return res.status(404).json({ 
-                message: 'User not found' 
+            return res.status(404).json({
+                message: 'User not found'
             });
         }
 
-        return res.status(200).json({ 
-            message: 'User fetched successfully', 
-            user 
+        return res.status(200).json({
+            message: 'User fetched successfully',
+            user
         });
 
     } catch (error) {
@@ -199,8 +199,8 @@ export const updateProfile = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
     const { role, token } = req.body;
     try {
-        
-        if(!userId){
+
+        if (!userId) {
             return res.status(401).json({ message: 'userId from token not found' });
         }
 
@@ -247,9 +247,9 @@ export const updateProfile = async (req: Request, res: Response) => {
         if (role === "TAILOR") {
             updatedUser = await prisma.user.update({
                 where: { id: Number(userId) },
-                data: { 
-                    roles: { connect: [{ id: roleFromDb.id }] }, 
-                    credit: 40 
+                data: {
+                    roles: { connect: [{ id: roleFromDb.id }] },
+                    credit: 40
                 },
                 include: { roles: true }
             });
@@ -261,8 +261,8 @@ export const updateProfile = async (req: Request, res: Response) => {
             });
         }
 
-        const {password: _, ...userWithoutPassword} = updatedUser;
-        const data = {...userWithoutPassword, token};
+        const { password: _, ...userWithoutPassword } = updatedUser;
+        const data = { ...userWithoutPassword, token };
 
         res.status(200).json({ message: 'Profile updated successfully', data });
     } catch (error) {
@@ -359,15 +359,15 @@ export const unblockUser = async (req: Request, res: Response) => {
 };
 
 export const verifyValidityToken = async (req: Request, res: Response) => {
-    const {token} = req.body;
+    const { token } = req.body;
     if (!token) {
         return res.status(401).json({ message: 'Unauthorized: No token provided' });
     }
-    try{
+    try {
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET || '9f86d081884c7d659a2feaa0c55ad023') as jwt.JwtPayload;
         console.log(decodedToken);
-        return res.status(200).json({ message: 'Valid token'});
-    }catch(error) {
+        return res.status(200).json({ message: 'Valid token' });
+    } catch (error) {
         console.log('Token verification error:', error);
         return res.status(401).json({ message: 'Unauthorized: Invalid or expired token' });
     }
@@ -405,7 +405,24 @@ export const verifyValidityUserToken = async (req: Request, res: Response) => {
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET || '9f86d081884c7d659a2feaa0c55ad023') as jwt.JwtPayload;
         console.log(decodedToken);
 
-        return res.status(200).json({ message: 'Valid token' });
+        // Récupérer les données de l'utilisateur
+        const user = await prisma.user.findUnique({
+            where: { id: decodedToken.userId },
+            include: { roles: true }
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Retourner les données utilisateur sans le mot de passe
+        const { password: _, ...userWithoutPassword } = user;
+
+        return res.status(200).json({
+            message: 'Valid token',
+            user: userWithoutPassword,
+            token: token
+        });
     } catch (error) {
         console.log('Token verification error:', error);
         return res.status(401).json({ message: 'Unauthorized: Invalid or expired token' });
@@ -443,10 +460,10 @@ export const logout = async (req: Request, res: Response) => {
 
 export const getUserNotifications = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
-    try{
-        const {type} = req.query;
+    try {
+        const { type } = req.query;
 
-        if(!userId){
+        if (!userId) {
             return res.status(401).json({ message: 'userId from token not found' });
         }
 
@@ -454,7 +471,7 @@ export const getUserNotifications = async (req: Request, res: Response) => {
             where: { id: Number(userId) }
         });
 
-        if(!user){
+        if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
@@ -490,10 +507,10 @@ export const getUserNotifications = async (req: Request, res: Response) => {
             orderBy: { createdAt: 'desc' }
         });
 
-        
+
         return res.status(200).json({ message: 'All notifications fetched successfully', notifications });
 
-    }catch (error) {
+    } catch (error) {
         console.error('Get notifications error:', error);
         return res.status(500).json({
             message: 'Failed to fetch notifications',

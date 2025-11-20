@@ -386,7 +386,21 @@ const verifyValidityUserToken = (req, res) => __awaiter(void 0, void 0, void 0, 
         // Décoder et vérifier le token JWT
         const decodedToken = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET || '9f86d081884c7d659a2feaa0c55ad023');
         console.log(decodedToken);
-        return res.status(200).json({ message: 'Valid token' });
+        // Récupérer les données de l'utilisateur
+        const user = yield db_config_1.default.user.findUnique({
+            where: { id: decodedToken.userId },
+            include: { roles: true }
+        });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        // Retourner les données utilisateur sans le mot de passe
+        const { password: _ } = user, userWithoutPassword = __rest(user, ["password"]);
+        return res.status(200).json({
+            message: 'Valid token',
+            user: userWithoutPassword,
+            token: token
+        });
     }
     catch (error) {
         console.log('Token verification error:', error);

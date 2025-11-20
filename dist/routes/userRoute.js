@@ -23,5 +23,6 @@ router.post('/unblock/:deblockedId', authMiddlewares_1.getToken, userController_
 router.get('/get-post', authMiddlewares_1.getToken, postController_1.getUserPosts);
 router.get('/logout', authMiddlewares_1.getTokenFromHeader, userController_1.logout);
 router.post('/verify', userController_1.verifyValidityToken);
+router.get('/verify-token', userController_1.verifyValidityUserToken);
 router.get('/user-by-id/:userId', userController_1.getUser);
 exports.default = router;

@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { register, getAllUsers, getUser, deleteUser, updateUser, login, updateProfile, blockUser, unblockUser, logout, verifyValidityToken, getUserNotifications } from '../controllers/userController';
+import { register, getAllUsers, getUser, deleteUser, updateUser, login, updateProfile, blockUser, unblockUser, logout, verifyValidityToken, verifyValidityUserToken, getUserNotifications } from '../controllers/userController';
 import { getToken, getTokenFromHeader } from '../middlewares/authMiddlewares';
-import  upload  from '../config/multer';
+import upload from '../config/multer';
 import { getUserPosts } from '../controllers/postController';
 
 
@@ -17,11 +17,12 @@ router.put('/update', getToken, updateUser);
 router.delete('/delete/:id', deleteUser);
 router.post('/login', login);
 router.put('/update-profile', getToken, updateProfile);
-router.post('/block/:blockedId',getToken, blockUser);
-router.post('/unblock/:deblockedId',getToken, unblockUser);
-router.get('/get-post',getToken, getUserPosts);
+router.post('/block/:blockedId', getToken, blockUser);
+router.post('/unblock/:deblockedId', getToken, unblockUser);
+router.get('/get-post', getToken, getUserPosts);
 router.get('/logout', getTokenFromHeader, logout);
 router.post('/verify', verifyValidityToken);
+router.get('/verify-token', verifyValidityUserToken);
 router.get('/user-by-id/:userId', getUser);
 
 
